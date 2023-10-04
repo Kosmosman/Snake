@@ -28,20 +28,25 @@ namespace joaquind {
 
         void Init(coord_type coord) {
             snake_size_ = start_snake_size_;
+            direction_ = RIGHT;
             for (auto i = 0; i < snake_size_; ++i)
                 snake_body_[i] = {coord.first / 2, coord.second / 2 - i};
         };
 
-        coord_type Move() {
+        void Move() {
             switch (direction_) {
                 case RIGHT:
-                    return MakeMove(0, 1);
+                    MakeMove(0, 1);
+                    break;
                 case LEFT:
-                    return MakeMove(0, -1);
+                    MakeMove(0, -1);
+                    break;
                 case UP:
-                    return MakeMove(-1, 0);
+                    MakeMove(-1, 0);
+                    break;
                 case DOWN:
-                    return MakeMove(1, 0);
+                    MakeMove(1, 0);
+                    break;
             }
         };
 

@@ -6,6 +6,8 @@
 #define SNAKE_GAME_H
 
 #include "configurates.h"
+#include <termios.h>
+#include <unistd.h>
 
 namespace joaquind {
 
@@ -17,26 +19,53 @@ namespace joaquind {
         game(field<>& f, snake& s) : game_filed_(f), snake_(s) {};
 
         void start() {
-            Init();
+            InitInput();
+            InitSnake();
             while (true) {
                 game_filed_.PrintField();
-                char button{};
-                (std::cin >> button).get();
+                char button{ReadButton()};
                 auto tail{snake_.GetTail()};
                 Move(button);
-                if (!CheckCell(tail)) {
-                    game_filed_.Clear();
-                    game_filed_.Init();
-                    snake_.Init(game_filed_.GetSize());
-                    Init();
-                }
+                if (!CheckCell(tail)) Reset();
             }
         };
 
     private:
-        void Init() {
+        void InitInput() {
+            struct termios old_settings, new_settings;
+            tcgetattr(STDIN_FILENO, &old_settings);
+            new_settings = old_settings;
+            new_settings.c_lflag &= ~(ICANON | ECHO);
+            tcsetattr(STDIN_FILENO, TCSANOW, &new_settings);
+        };
+
+        void InitSnake() {
             for (auto &i: snake_.GetSnake())
                 game_filed_.FillCell(i, field<>::SNAKE);
+        };
+
+        void Reset() {
+            game_filed_.Clear();
+            game_filed_.Init();
+            snake_.Init(game_filed_.GetSize());
+            InitSnake();
+        }
+
+        char ReadButton() {
+            fd_set readfds;
+            FD_ZERO(&readfds);
+            FD_SET(STDIN_FILENO, &readfds);
+
+            struct timeval timeout;
+            timeout.tv_sec = 0;
+            timeout.tv_usec = 100000;
+
+            int ready = select(STDIN_FILENO + 1, &readfds, nullptr, nullptr, &timeout);
+            char input{};
+            if (ready > 0 && FD_ISSET(STDIN_FILENO, &readfds)) {
+                input = static_cast<char>(getchar());
+            }
+            return input;
         };
 
         void Move(char& button) {
