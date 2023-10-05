@@ -32,7 +32,7 @@ namespace joaquind {
 
     private:
         void InitInput() {
-            struct termios old_settings, new_settings;
+            struct termios old_settings{}, new_settings{};
             tcgetattr(STDIN_FILENO, &old_settings);
             new_settings = old_settings;
             new_settings.c_lflag &= ~(ICANON | ECHO);
@@ -56,7 +56,7 @@ namespace joaquind {
             FD_ZERO(&readfds);
             FD_SET(STDIN_FILENO, &readfds);
 
-            struct timeval timeout;
+            struct timeval timeout{};
             timeout.tv_sec = 0;
             timeout.tv_usec = 100000;
 

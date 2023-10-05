@@ -2,7 +2,7 @@
 // Created by Joaquina Daeron on 10/4/23.
 //
 
-#include "settings/game.h"
+#include "src/settings/configurates.h"
 
 int main() {
     joaquind::field<30, 50> f;

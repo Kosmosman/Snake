@@ -7,5 +7,6 @@
 
 #include "field.h"
 #include "snake.h"
+#include "game.h"
 
 #endif //SNAKE_CONFIGURATES_H
