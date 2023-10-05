@@ -7,7 +7,7 @@
 int main() {
     joaquind::field<30, 50> f;
     joaquind::snake s(f);
-    joaquind::game g(f, s);
+    joaquind::game<joaquind::field<>, joaquind::snake> g(f, s);
     g.start();
     return 0;
 }
