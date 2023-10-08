@@ -11,20 +11,26 @@
 
 namespace joaquind {
 
+    template <typename F>
     class snake {
     public:
         using size_t = unsigned long;
         using coord_type = std::pair<size_t, size_t>;
         using snake_type = std::vector<coord_type>;
-        enum kDirection{UP, RIGHT, DOWN, LEFT};
+        enum kDirection {
+            UP, RIGHT, DOWN, LEFT
+        };
 
-        explicit snake(coord_type coord) : snake_size_{start_snake_size_}, snake_body_(coord.first * coord.second) {Init(coord);};
-        explicit snake(field<>& f) : snake_size_{start_snake_size_}, snake_body_(f.GetSize().first * f.GetSize().second) {Init(f.GetSize());};
+        explicit snake(coord_type coord) : snake_size_{start_snake_size_},
+                                           snake_body_(coord.first * coord.second) { Init(coord); };
 
-        const coord_type& GetHead() {return snake_body_[0];};
-        const coord_type& GetTail() {return snake_body_[snake_size_ - 1];};
-        const snake_type& GetSnake() {return snake_body_;};
-        void ChangeDirection(kDirection direction) {direction_ = direction;};
+        const coord_type &GetHead() { return snake_body_[0]; };
+
+        const coord_type &GetTail() { return snake_body_[snake_size_ - 1]; };
+
+        const snake_type &GetSnake() { return snake_body_; };
+
+        void ChangeDirection(kDirection direction) { direction_ = direction; };
 
         void Init(coord_type coord) {
             snake_size_ = start_snake_size_;

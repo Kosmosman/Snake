@@ -5,9 +5,13 @@
 #include "src/settings/configurates.h"
 
 int main() {
-    joaquind::field<30, 50> f;
-    joaquind::snake s(f);
-    joaquind::game<joaquind::field<>, joaquind::snake> g(f, s);
+    std::cout << "Input height and width of field: ";
+    joaquind::size_t h, w;
+    std::cin >> h >> w;
+    joaquind::field f (h, w);
+    joaquind::snake<joaquind::field> s(std::pair(h, w));
+    joaquind::game<joaquind::field, joaquind::snake<joaquind::field>, joaquind::Meal> g(f, s);
+    std::cout << "Press any key for start\n";
     g.start();
     return 0;
 }
