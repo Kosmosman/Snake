@@ -5,4 +5,5 @@
 #include "server.h"
 
 namespace joaquind {
+
 } // joaquind

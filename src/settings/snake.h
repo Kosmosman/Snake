@@ -69,10 +69,10 @@ namespace joaquind {
             return tmp;
         };
 
-        static constexpr ::size_t start_snake_size_{3};
-        ::size_t snake_size_;
+        static constexpr size_t start_snake_size_{3};
+        size_t snake_size_;
         snake_type snake_body_;  // Y, X
-        ::size_t direction_{RIGHT};
+        size_t direction_{RIGHT};
     };
 
 } // joaquind

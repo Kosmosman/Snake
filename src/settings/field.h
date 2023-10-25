@@ -20,7 +20,7 @@ namespace joaquind {
         enum kFieldType {
             BORDER = '#', SNAKE = 'x', MEAL = 'o', FIELD = ' '
         };
-        using coord_type = std::pair<::size_t, ::size_t>;
+        using coord_type = std::pair<size_t, size_t>;
         using field_type = std::vector<std::vector<char>>;
 
         field(size_t height, size_t width) : height_{height}, width_{width},

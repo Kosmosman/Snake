@@ -2,7 +2,7 @@
 // Created by Joaquina Daeron on 10/4/23.
 //
 
-#include "src/settings/configurates.h"
+#include <configurates.h>
 
 int main() {
     std::cout << "Input height and width of field: ";

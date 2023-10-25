@@ -5,11 +5,9 @@
 #ifndef SNAKE_MEAL_H
 #define SNAKE_MEAL_H
 
-#include <utility>
 #include <random>
 
 namespace joaquind {
-
     class Meal {
     public:
         using size_t = unsigned long;

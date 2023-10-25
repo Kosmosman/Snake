@@ -14,7 +14,7 @@ namespace joaquind {
     template<typename F, typename S, typename M>
     class game {
     public:
-        using coord_type = std::pair<::size_t, ::size_t>;
+        using coord_type = std::pair<size_t, size_t>;
 
         game(F &f, S &s) : game_filed_(f), snake_(s) {};
 
