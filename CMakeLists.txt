@@ -6,5 +6,4 @@ add_subdirectory(src)
 add_subdirectory(include)
 add_executable(Main main.cpp)
 
-target_link_libraries(Main PRIVATE Asio)
-target_link_libraries(Main PRIVATE Logic)
+target_link_libraries(Main PRIVATE Client)
