@@ -36,10 +36,14 @@ namespace joaquind {
 
     void Client::ReadFromSocket() {
         auto str = std::make_shared<std::string>();
-        s_.async_read_some(asio::buffer(*str), [this, str](const asio::error_code &e, std::size_t bytes){ if (!e) PrintField(str); });
+        s_.async_read_some(asio::buffer(*str),
+                           [this, str](const asio::error_code &e, std::size_t bytes) {
+                               if (!e && bytes)
+                                   PrintField(str);
+                           });
     }
 
-    void Client::PrintField(const std::shared_ptr<std::string>& s_ptr) {
+    void Client::PrintField(const std::shared_ptr<std::string> &s_ptr) {
         std::cout << *s_ptr << '\n';
         ReadFromSocket();
     }

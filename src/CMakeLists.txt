@@ -3,5 +3,5 @@ project(Snake)
 set(CMAKE_CXX_STANDARD 20)
 
 add_library(Client client/client.cpp client/client.h)
-target_link_libraries(Client PRIVATE Asio)
+target_link_libraries(Client PUBLIC Asio)
 target_include_directories(Client PUBLIC client)
