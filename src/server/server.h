@@ -11,7 +11,12 @@ namespace joaquind {
 
     class Server {
     public:
+        using size_t = unsigned long;
+        using socket_ptr = std::shared_ptr<asio::ip::tcp::socket>;
+
         void Connect();
+
+        void Start();
     };
 
 } // joaquind
