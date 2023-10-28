@@ -3,27 +3,29 @@
 //
 
 #include "server.h"
-#include "joinable_thread.h"
 #include <thread>
 #include <iostream>
 
 namespace joaquind {
     void Server::Connect() {
-        asio::io_context io;
-        asio::ip::tcp::endpoint ep(asio::ip::tcp::v4(), 8080);
-        asio::ip::tcp::acceptor acceptor(io, ep);
-        size_t count_of_peers{};
-
-        while (count_of_peers < 2) {
-            auto socket = std::make_shared<asio::ip::tcp::socket>(io);
-            acceptor.accept(*socket);
-            Jthread jthread([this] { Start(); });
-            ++count_of_peers;
-        }
+        NewConnection();
+        io_.run();
     }
 
-    void Server::Start() {
-        std::cout << "New connect\n";
-        while (true);
+    void Server::NewConnection() {
+        auto new_socket = std::make_shared<asio::ip::tcp::socket>(io_);
+        acceptor_.async_accept(*new_socket, [this, new_socket](const asio::error_code& er) {
+            std::cout << "New connect\n";
+            if (!er) Start(new_socket);
+            NewConnection();
+        });
+    }
+
+    void Server::Start(socket_ptr s) {
+
+        s->async_read_some(asio::buffer(buff_, 1), [this, s](const asio::error_code &er, size_t bytes) {
+            if (buff_[0]) std::cout << "Client input " << buff_[0] << '\n';
+            Start(s);
+        });
     }
 } // joaquind

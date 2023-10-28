@@ -17,7 +17,14 @@ namespace joaquind {
         void Connect();
 
     private:
-        void Start();
+        void Start(socket_ptr s);
+
+        void NewConnection();
+
+        asio::io_context io_;
+        asio::ip::tcp::endpoint ep_{asio::ip::tcp::v4(), 5000};
+        asio::ip::tcp::acceptor acceptor_{io_, ep_};
+        char buff_[1]{};
     };
 
 } // joaquind
