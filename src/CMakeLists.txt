@@ -7,5 +7,5 @@ target_link_libraries(Server PRIVATE Asio)
 target_include_directories(Server PRIVATE server)
 target_include_directories(Server PRIVATE "${CMAKE_SOURCE_DIR}/include/asio-12.8.0/include")
 
-add_library(Logic INTERFACE)
+add_library(Logic INTERFACE settings)
 target_include_directories(Logic INTERFACE settings)

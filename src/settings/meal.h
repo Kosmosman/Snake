@@ -15,7 +15,7 @@ namespace joaquind {
 
         Meal() : mt_(rd_()), dist_(1, 1000) {};
 
-        coord_type operator()(const coord_type &coord) {
+        coord_type operator()(coord_type coord) {
             return {dist_(mt_) % coord.first, dist_(mt_) % coord.second};
         };
     private:

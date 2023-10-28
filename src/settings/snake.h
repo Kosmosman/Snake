@@ -7,12 +7,9 @@
 
 #include <vector>
 
-#include "configurates.h"
-
 namespace joaquind {
 
-    template <typename F>
-    class snake {
+    class Snake {
     public:
         using size_t = unsigned long;
         using coord_type = std::pair<size_t, size_t>;
@@ -21,7 +18,7 @@ namespace joaquind {
             UP, RIGHT, DOWN, LEFT
         };
 
-        explicit snake(coord_type coord) : snake_size_{start_snake_size_},
+        explicit Snake(coord_type coord) : snake_size_{start_snake_size_},
                                            snake_body_(coord.first * coord.second) { Init(coord); };
 
         const coord_type &GetHead() { return snake_body_[0]; };
