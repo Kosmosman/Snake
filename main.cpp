@@ -5,6 +5,7 @@
 #include "client.h"
 
 int main() {
-
+    joaquind::Client client;
+    client.Connect();
     return 0;
 }

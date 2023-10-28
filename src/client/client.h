@@ -8,7 +8,8 @@
 namespace joaquind {
 
     class Client {
-
+    public:
+        void Connect();
     };
 
 } // joaquind
