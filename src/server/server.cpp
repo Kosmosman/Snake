@@ -5,6 +5,7 @@
 #include "server.h"
 #include "joinable_thread.h"
 #include <thread>
+#include <iostream>
 
 namespace joaquind {
     void Server::Connect() {
@@ -17,10 +18,12 @@ namespace joaquind {
             auto socket = std::make_shared<asio::ip::tcp::socket>(io);
             acceptor.accept(*socket);
             Jthread jthread([this] { Start(); });
+            ++count_of_peers;
         }
     }
 
     void Server::Start() {
+        std::cout << "New connect\n";
         while (true);
     }
 } // joaquind

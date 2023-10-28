@@ -5,6 +5,7 @@
 #include "server.h"
 
 int main() {
-
+    joaquind::Server s;
+    s.Connect();
     return 0;
 }

@@ -16,6 +16,7 @@ namespace joaquind {
 
         void Connect();
 
+    private:
         void Start();
     };
 
