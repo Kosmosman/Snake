@@ -4,6 +4,7 @@
 
 #include "client.h"
 #include <termios.h>
+#include <iostream>
 
 namespace joaquind {
     void Client::Connect() {
@@ -35,16 +36,19 @@ namespace joaquind {
     }
 
     void Client::ReadFromSocket() {
-        auto str = std::make_shared<std::string>();
-        s_.async_read_some(asio::buffer(*str),
-                           [this, str](const asio::error_code &e, std::size_t bytes) {
+        s_.async_read_some(asio::buffer(buffer_),
+                           [this](const asio::error_code &e, std::size_t bytes) {
+                               std::cout << "I get a data from socket!\n";
                                if (!e && bytes)
-                                   PrintField(str);
+                                   PrintField();
+                               else
+                                   ReadFromSocket();
                            });
     }
 
-    void Client::PrintField(const std::shared_ptr<std::string> &s_ptr) {
-        std::cout << *s_ptr << '\n';
+    void Client::PrintField() {
+        for (int i{}; buffer_[i]; ++i)
+            std::cout << buffer_[i];
         ReadFromSocket();
     }
 
