@@ -6,4 +6,4 @@ add_subdirectory(src)
 add_subdirectory(include)
 add_executable(Main main.cpp)
 
-target_link_libraries(Main PUBLIC Server)
+target_link_libraries(Main PUBLIC Server GameLogic)
