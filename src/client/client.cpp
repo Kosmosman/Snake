@@ -38,7 +38,6 @@ namespace joaquind {
     void Client::ReadFromSocket() {
         s_.async_read_some(asio::buffer(buffer_),
                            [this](const asio::error_code &e, std::size_t bytes) {
-                               std::cout << "I get a data from socket!\n";
                                if (!e && bytes)
                                    PrintField();
                                else
