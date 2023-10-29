@@ -6,8 +6,6 @@
 #define SNAKE_GAME_H
 
 #include "configurations.h"
-#include <termios.h>
-#include <unistd.h>
 
 namespace joaquind {
 
@@ -15,12 +13,13 @@ namespace joaquind {
     public:
         using coord_type = std::pair<size_t, size_t>;
 
-        Game(Field *f, Snake *s, Meal* m) : game_filed_(f), snake_(s), meal_{m} {
+        Game(Field *f, std::vector<Snake> *s, Meal* m) : game_filed_(f), snake_(s), meal_{m} {
             StartInit();
         };
 
-        std::string UpdateField(char button) {
-            auto tail{snake_->GetTail()};
+        std::string UpdateField(char button, size_t id) {
+            gamer_id_ = id;
+            auto tail{(*snake_)[gamer_id_].GetTail()};
             Move(button);
             if (!CheckCell(tail)) {
                 Reset();
@@ -36,7 +35,7 @@ namespace joaquind {
         }
 
         void InitSnake() {
-            for (auto &i: snake_->GetSnake())
+            for (auto &i: (*snake_)[gamer_id_].GetSnake())
                 game_filed_->FillCell(i, Field::SNAKE);
         };
 
@@ -50,23 +49,23 @@ namespace joaquind {
         void Reset() {
             game_filed_->Clear();
             game_filed_->Init();
-            snake_->Init(game_filed_->GetSize());
+            (*snake_)[gamer_id_].Init(game_filed_->GetSize());
             InitMeal();
         }
 
         void Move(char &button) {
             switch (button) {
                 case 'w':
-                    snake_->ChangeDirection(Snake::UP);
+                    (*snake_)[gamer_id_].ChangeDirection(Snake::UP);
                     break;
                 case 'd':
-                    snake_->ChangeDirection(Snake::RIGHT);
+                    (*snake_)[gamer_id_].ChangeDirection(Snake::RIGHT);
                     break;
                 case 's':
-                    snake_->ChangeDirection(Snake::DOWN);
+                    (*snake_)[gamer_id_].ChangeDirection(Snake::DOWN);
                     break;
                 case 'a':
-                    snake_->ChangeDirection(Snake::LEFT);
+                    (*snake_)[gamer_id_].ChangeDirection(Snake::LEFT);
                     break;
                 case 'p':
                     while (getchar() != 'p') continue;
@@ -74,15 +73,15 @@ namespace joaquind {
                 default:
                     break;
             }
-            snake_->Move();
+            (*snake_)[gamer_id_].Move();
         };
 
         bool CheckCell(coord_type &deleted) {
-            auto head{snake_->GetHead()};
+            auto head{(*snake_)[gamer_id_].GetHead()};
             if (game_filed_->GetCell(head) == Field::BORDER || game_filed_->GetCell(head) == Field::SNAKE) {
                 return false;
             } else if (game_filed_->GetCell(head) == Field::MEAL) {
-                snake_->Increase(deleted);
+                (*snake_)[gamer_id_].Increase(deleted);
                 InitMeal();
             } else {
                 game_filed_->FillCell(head, Field::SNAKE);
@@ -91,9 +90,10 @@ namespace joaquind {
             return true;
         };
 
-        Field* game_filed_;
-        Snake* snake_;
+        Field *game_filed_;
+        std::vector<Snake> *snake_;
         Meal* meal_;
+        size_t gamer_id_{};
     };
 
 } // joaquind

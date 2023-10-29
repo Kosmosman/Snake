@@ -7,9 +7,9 @@
 
 int main() {
     joaquind::Field field(30, 30);
-    joaquind::Snake snake({15, 15});
+    std::vector<joaquind::Snake> snakes{ joaquind::Snake({5, 5}),  joaquind::Snake({25, 25})};
     joaquind::Meal meal;
-    joaquind::Game g(&field, &snake, &meal);
+    joaquind::Game g(&field, &snakes, &meal);
     joaquind::Server s(&g);
     s.Connect();
     return 0;

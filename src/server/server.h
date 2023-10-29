@@ -33,7 +33,8 @@ namespace joaquind {
         char buff_[2]{};
         std::atomic<size_t> count_of_clients{};
         std::unordered_map<socket_ptr, size_t> clients_; // socket, id
-        Game* g_;
+        Game *g_;
+        std::mutex mutex_{};
     };
 
 } // joaquind

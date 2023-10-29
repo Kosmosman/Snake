@@ -18,16 +18,23 @@ namespace joaquind {
             std::cout << "New connect\n";
             if (!er) {
                 AddNewClient(new_socket);
+            } else {
+                new_socket->close();
             }
             NewConnection();
         });
     }
 
     void Server::Start(socket_ptr s) {
-        s->async_read_some(asio::buffer(buff_, 1), [this, s](const asio::error_code &er, size_t bytes) {
-            if (buff_[0]) std::cout << "Client input " << buff_[0] << '\n';
-            auto field = g_->UpdateField(buff_[0]);
-            s->write_some(asio::buffer(field));
+        auto id = clients_[s];
+        s->async_read_some(asio::buffer(buff_ + id, 1), [this, s, id](const asio::error_code &er, size_t bytes) {
+            if (buff_[id]) std::cout << "Client " << id << " input " << buff_[0] << '\n';
+            mutex_.lock();
+            auto field = g_->UpdateField(buff_[id], id);
+            mutex_.unlock();
+            for (const auto &i: clients_) {
+                i.first->write_some(asio::buffer(field));
+            }
             Start(s);
         });
     }

@@ -7,13 +7,13 @@ target_include_directories(Utility INTERFACE utility)
 
 add_library(
         GameLogic INTERFACE
-        settings/configurations.h
-        settings/field.h
-        settings/game.h
-        settings/meal.h
-        settings/snake.h
+        logic/configurations.h
+        logic/field.h
+        logic/game.h
+        logic/meal.h
+        logic/snake.h
 )
-target_include_directories(GameLogic INTERFACE settings)
+target_include_directories(GameLogic INTERFACE logic)
 
 add_library(Server server/server.cpp server/server.h)
 target_link_libraries(Server PUBLIC Asio Utility GameLogic)
