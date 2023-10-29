@@ -5,6 +5,7 @@
 #include "server.h"
 #include <thread>
 #include <iostream>
+#include <chrono>
 
 namespace joaquind {
     void Server::Connect() {
@@ -28,13 +29,7 @@ namespace joaquind {
     void Server::Start(socket_ptr s) {
         auto id = clients_[s];
         s->async_read_some(asio::buffer(buff_ + id, 1), [this, s, id](const asio::error_code &er, size_t bytes) {
-            if (buff_[id]) std::cout << "Client " << id << " input " << buff_[0] << '\n';
-            mutex_.lock();
-            auto field = g_->UpdateField(buff_[id], id);
-            mutex_.unlock();
-            for (const auto &i: clients_) {
-                i.first->write_some(asio::buffer(field));
-            }
+            DataUpdate(id);
             Start(s);
         });
     }
@@ -43,6 +38,15 @@ namespace joaquind {
         if (count_of_clients.load() == max_count_of_clients) return;
         clients_[socket] = count_of_clients.fetch_add(1);
         Start(std::move(socket));
+    }
+
+    void Server::DataUpdate(size_t id) {
+        mutex_.lock();
+        auto field = g_->UpdateField(buff_[id], id);
+        mutex_.unlock();
+        for (const auto &i: clients_) {
+            i.first->write_some(asio::buffer(field));
+        }
     }
 
 } // joaquind

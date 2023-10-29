@@ -14,7 +14,7 @@ namespace joaquind {
 
     class Server {
     public:
-        explicit Server(Game *game) : clients_(2), g_{game} {};
+        explicit Server(Game *game) : clients_(2), g_{game}, t_(io_, std::chrono::seconds(2)) {};
         using size_t = unsigned long;
         using socket_ptr = std::shared_ptr<asio::ip::tcp::socket>;
 
@@ -27,6 +27,8 @@ namespace joaquind {
 
         void AddNewClient(socket_ptr socket);
 
+        void DataUpdate(size_t id);
+
         asio::io_context io_;
         asio::ip::tcp::endpoint ep_{asio::ip::tcp::v4(), 5000};
         asio::ip::tcp::acceptor acceptor_{io_, ep_};
@@ -35,6 +37,7 @@ namespace joaquind {
         std::unordered_map<socket_ptr, size_t> clients_; // socket, id
         Game *g_;
         std::mutex mutex_{};
+        asio::system_timer t_;
     };
 
 } // joaquind
