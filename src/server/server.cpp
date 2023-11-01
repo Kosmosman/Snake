@@ -31,6 +31,15 @@ namespace joaquind {
         s->async_read_some(asio::buffer(buff_ + id, 1), [this, s, id](const asio::error_code &er, size_t bytes) {
             DataUpdate(id);
             Start(s);
+            is_reading_[id] = true;
+        });
+        timer_.expires_after(asio::chrono::milliseconds(1000));
+        timer_.async_wait([this, s, id](const asio::error_code &) {
+            if (!is_reading_[id]) {
+                DataUpdate(id);
+                Start(s);
+            }
+            is_reading_[id] = false;
         });
     }
 

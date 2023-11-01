@@ -32,12 +32,15 @@ namespace joaquind {
         asio::io_context io_;
         asio::ip::tcp::endpoint ep_{asio::ip::tcp::v4(), 5000};
         asio::ip::tcp::acceptor acceptor_{io_, ep_};
-        char buff_[2]{};
-        std::atomic<size_t> count_of_clients{};
-        std::unordered_map<socket_ptr, size_t> clients_; // socket, id
-        Game *g_;
         std::mutex mutex_{};
         asio::system_timer t_;
+
+        char buff_[2]{};
+        Game *g_;
+        std::atomic<size_t> count_of_clients{};
+        std::unordered_map<socket_ptr, size_t> clients_; // socket, id
+        asio::steady_timer timer_{io_, asio::chrono::milliseconds(500)};
+        bool is_reading_[2]{};
     };
 
 } // joaquind
