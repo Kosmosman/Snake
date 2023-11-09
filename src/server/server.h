@@ -12,9 +12,15 @@
 namespace joaquind {
     constexpr size_t max_count_of_clients = 2;
 
+    struct ClientData {
+        size_t id{};
+        std::shared_ptr<asio::steady_timer> timer{};
+        char buff[1]{};
+    };
+
     class Server {
     public:
-        explicit Server(Game *game) : clients_(2), g_{game}, t_(io_, std::chrono::seconds(2)) {};
+        explicit Server(Game *game) : g_{game} {};
         using size_t = unsigned long;
         using socket_ptr = std::shared_ptr<asio::ip::tcp::socket>;
 
@@ -27,20 +33,18 @@ namespace joaquind {
 
         void AddNewClient(socket_ptr socket);
 
-        void DataUpdate(size_t id);
+        void DataUpdate(socket_ptr s);
+
+        void HandleTimeout(const asio::error_code &error, socket_ptr s);
 
         asio::io_context io_;
         asio::ip::tcp::endpoint ep_{asio::ip::tcp::v4(), 5000};
         asio::ip::tcp::acceptor acceptor_{io_, ep_};
         std::mutex mutex_{};
-        asio::system_timer t_;
 
-        char buff_[2]{};
         Game *g_;
         std::atomic<size_t> count_of_clients{};
-        std::unordered_map<socket_ptr, size_t> clients_; // socket, id
-        asio::steady_timer timer_{io_, asio::chrono::milliseconds(500)};
-        bool is_reading_[2]{};
+        std::unordered_map<socket_ptr, ClientData> clients_; // socket, client_info
     };
 
 } // joaquind
