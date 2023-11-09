@@ -37,6 +37,8 @@ namespace joaquind {
 
         void HandleTimeout(const asio::error_code &error, socket_ptr s);
 
+        void UpdateHandler(socket_ptr s);
+
         asio::io_context io_;
         asio::ip::tcp::endpoint ep_{asio::ip::tcp::v4(), 5000};
         asio::ip::tcp::acceptor acceptor_{io_, ep_};

@@ -15,12 +15,17 @@ namespace joaquind {
 
     void Server::HandleTimeout(const asio::error_code &error, socket_ptr s) {
         if (!error) {
-            DataUpdate(s);
-            clients_[s].timer->cancel();
-            clients_[s].timer->expires_from_now(asio::chrono::milliseconds(1000));
-            clients_[s].timer->async_wait([this, s](const asio::error_code &err) { HandleTimeout(err, s); });
+            UpdateHandler(s);
         }
     }
+
+    void Server::UpdateHandler(Server::socket_ptr s) {
+        DataUpdate(s);
+        clients_[s].timer->cancel();
+        clients_[s].timer->expires_from_now(asio::chrono::milliseconds(1000));
+        clients_[s].timer->async_wait([this, s](const asio::error_code &err) { HandleTimeout(err, s); });
+    }
+
 
     void Server::NewConnection() {
         auto new_socket = std::make_shared<asio::ip::tcp::socket>(io_);
@@ -35,13 +40,11 @@ namespace joaquind {
         });
     }
 
+
     void Server::Start(socket_ptr s) {
         s->async_read_some(asio::buffer(clients_[s].buff, 1), [this, s](const asio::error_code &error, size_t bytes) {
             if (!error) {
-                DataUpdate(s);
-                clients_[s].timer->cancel();
-                clients_[s].timer->expires_from_now(asio::chrono::milliseconds(1000));
-                clients_[s].timer->async_wait([this, s](const asio::error_code &err) { HandleTimeout(err, s); });
+                UpdateHandler(s);
             }
             Start(s);
         });
