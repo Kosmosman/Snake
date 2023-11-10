@@ -15,7 +15,7 @@ namespace joaquind {
 
     void Server::HandleTimeout(const asio::error_code &error, socket_ptr s) {
         if (!error) {
-            UpdateHandler(s);
+            UpdateHandler(std::move(s));
         }
     }
 
