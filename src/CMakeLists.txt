@@ -13,9 +13,9 @@ add_library(
         logic/meal.h
         logic/snake.h
 )
-target_include_directories(GameLogic INTERFACE logic)
 
 add_library(Server server/server.cpp server/server.h)
 target_link_libraries(Server PUBLIC Asio Utility GameLogic)
 target_include_directories(Server PUBLIC server)
+target_include_directories(Server PUBLIC logic)
 target_include_directories(Server PRIVATE utility)

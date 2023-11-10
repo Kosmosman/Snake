@@ -53,9 +53,7 @@ namespace joaquind {
             }
         };
 
-        void Increase(coord_type coord) {
-            snake_body_[snake_size_++] = coord;
-        };
+        void Increase(coord_type coord) { snake_body_[snake_size_++] = coord; };
 
     private:
         coord_type MakeMove(int diff_v, int diff_h) {

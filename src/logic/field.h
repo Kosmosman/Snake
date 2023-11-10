@@ -20,7 +20,7 @@ namespace joaquind {
             BORDER = '#', SNAKE = 'x', MEAL = 'o', FIELD = ' '
         };
         using coord_type = std::pair<size_t, size_t>;
-        using Field_type = std::vector<std::vector<char>>;
+        using field_type = std::vector<std::vector<char>>;
 
         Field(size_t height, size_t width) : height_{height}, width_{width},
                                              Field_(height, std::vector<char>(width, ' ')) { Init(); };
@@ -44,8 +44,12 @@ namespace joaquind {
         }
 
         void Init() {
+            if (height_ <= 0 || width_ <= 0) {
+                height_ = STANDARD_HEIGHT;
+                width_ = STANDARD_WIDTH;
+            }
             for (int i = 0; i < width_; ++i) Field_[0][i] = Field_[height_ - 1][i] = BORDER;
-            for (int i = 1; i < height_ - 1; ++i) Field_[i][0] = Field_[i][width_ - 1] = BORDER;
+            for (int i = 0; i < height_; ++i) Field_[i][0] = Field_[i][width_ - 1] = BORDER;
         }
 
         void Clear() {
@@ -64,7 +68,7 @@ namespace joaquind {
         }
 
     private:
-        Field_type Field_;
+        field_type Field_;
         size_t height_;
         size_t width_;
     };
