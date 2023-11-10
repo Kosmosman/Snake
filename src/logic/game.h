@@ -13,15 +13,15 @@ namespace joaquind {
     public:
         using coord_type = std::pair<size_t, size_t>;
 
-        Game(Field *f, std::vector<Snake> *s, Meal* m) : game_filed_(f), snake_(s), meal_{m} {
+        Game(Field *f, std::vector<Snake> *s, Meal *m) : game_filed_(f), snake_(s), meal_{m} {
             StartInit();
         };
 
         std::string UpdateField(char button, size_t id) {
             gamer_id_ = id;
-            auto tail{(*snake_)[gamer_id_].GetTail()};
+            auto removed_cell{(*snake_)[gamer_id_].GetTail()};
             Move(button);
-            if (!CheckCell(tail)) {
+            if (!CheckCell(removed_cell)) {
                 Reset();
             }
             return game_filed_->TransformToString();
@@ -82,6 +82,7 @@ namespace joaquind {
                 return false;
             } else if (game_filed_->GetCell(head) == Field::MEAL) {
                 (*snake_)[gamer_id_].Increase(deleted);
+                game_filed_->FillCell(head, Field::SNAKE);
                 InitMeal();
             } else {
                 game_filed_->FillCell(head, Field::SNAKE);
@@ -92,7 +93,7 @@ namespace joaquind {
 
         Field *game_filed_;
         std::vector<Snake> *snake_;
-        Meal* meal_;
+        Meal *meal_;
         size_t gamer_id_{};
     };
 
