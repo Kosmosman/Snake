@@ -20,9 +20,12 @@ if (BUILD_TEST)
             GIT_REPOSITORY https://github.com/google/googletest.git
             GIT_TAG        release-1.11.0
     )
+
+    FetchContent_MakeAvailable(googletest)
+
     add_executable(Tests
             ${CMAKE_CURRENT_SOURCE_DIR}/tests/logic_test.cpp)
 
-    target_link_libraries(Tests PUBLIC GameLogic)
+    target_link_libraries(Tests PUBLIC GameLogic gtest gtest_main)
     target_include_directories(Tests PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src/logic)
 endif ()
