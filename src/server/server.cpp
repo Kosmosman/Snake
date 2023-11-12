@@ -9,17 +9,19 @@
 
 namespace joaquind {
     void Server::Connect() {
-        NewConnection();
+        HandleConnection();
         io_.run();
     }
 
     void Server::HandleTimeout(const asio::error_code &error, socket_ptr s) {
         if (!error) {
-            UpdateHandler(std::move(s));
+            HandleUpdate(std::move(s));
+        } else {
+            std::cout << error.message() << '\n';
         }
     }
 
-    void Server::UpdateHandler(Server::socket_ptr s) {
+    void Server::HandleUpdate(Server::socket_ptr s) {
         DataUpdate(s);
         clients_[s].timer->cancel();
         clients_[s].timer->expires_from_now(asio::chrono::milliseconds(1000));
@@ -27,7 +29,7 @@ namespace joaquind {
     }
 
 
-    void Server::NewConnection() {
+    void Server::HandleConnection() {
         auto new_socket = std::make_shared<asio::ip::tcp::socket>(io_);
         acceptor_.async_accept(*new_socket, [this, new_socket](const asio::error_code &error) {
             std::cout << "New connect\n";
@@ -36,17 +38,20 @@ namespace joaquind {
             } else {
                 new_socket->close();
             }
-            NewConnection();
+            HandleConnection();
         });
     }
 
 
-    void Server::Start(socket_ptr s) {
+    void Server::HandleRead(socket_ptr s) {
         s->async_read_some(asio::buffer(clients_[s].buff, 1), [this, s](const asio::error_code &error, size_t bytes) {
             if (!error) {
-                UpdateHandler(s);
+                HandleUpdate(s);
+            } else {
+                clients_.erase(s);
+                s->close();
             }
-            Start(s);
+            HandleRead(s);
         });
     }
 
@@ -54,7 +59,7 @@ namespace joaquind {
         if (count_of_clients.load() == max_count_of_clients) return;
         clients_[socket].id = count_of_clients.fetch_add(1);
         clients_[socket].timer = std::make_shared<asio::steady_timer>(io_);
-        Start(std::move(socket));
+        HandleRead(std::move(socket));
     }
 
     void Server::DataUpdate(socket_ptr s) {

@@ -27,9 +27,9 @@ namespace joaquind {
         void Connect();
 
     private:
-        void Start(socket_ptr s);
+        void HandleRead(socket_ptr s);
 
-        void NewConnection();
+        void HandleConnection();
 
         void AddNewClient(socket_ptr socket);
 
@@ -37,7 +37,7 @@ namespace joaquind {
 
         void HandleTimeout(const asio::error_code &error, socket_ptr s);
 
-        void UpdateHandler(socket_ptr s);
+        void HandleUpdate(Server::socket_ptr s);
 
         asio::io_context io_;
         asio::ip::tcp::endpoint ep_{asio::ip::tcp::v4(), 5000};
