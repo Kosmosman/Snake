@@ -40,7 +40,7 @@ namespace joaquind {
         };
 
         void InitMeal() {
-            coord_type tmp{0, 0};
+            coord_type tmp{};
             while (game_filed_->GetCell(tmp) != Field::FIELD)
                 tmp = (*meal_)(game_filed_->GetSize());
             game_filed_->FillCell(tmp, Field::MEAL);
