@@ -11,6 +11,7 @@
 
 namespace joaquind {
     constexpr size_t max_count_of_clients = 2;
+    constexpr size_t timer_iterator = 1000;
 
     struct ClientData {
         size_t id{};

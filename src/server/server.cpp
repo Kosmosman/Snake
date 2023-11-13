@@ -16,7 +16,8 @@ namespace joaquind {
     void Server::HandleTimeout(const asio::error_code &error, socket_ptr s) {
         if (!error) {
             HandleUpdate(std::move(s));
-        } else {
+        } else if (error != asio::error::operation_aborted) {
+            std::cout << "Error into HandleTimeout\n";
             std::cout << error.message() << '\n';
         }
     }
@@ -24,7 +25,7 @@ namespace joaquind {
     void Server::HandleUpdate(Server::socket_ptr s) {
         DataUpdate(s);
         clients_[s].timer->cancel();
-        clients_[s].timer->expires_from_now(asio::chrono::milliseconds(1000));
+        clients_[s].timer->expires_from_now(asio::chrono::milliseconds(timer_iterator));
         clients_[s].timer->async_wait([this, s](const asio::error_code &err) { HandleTimeout(err, s); });
     }
 
@@ -36,6 +37,7 @@ namespace joaquind {
             if (!error) {
                 AddNewClient(new_socket);
             } else {
+                std::cout << "Error into HandleConnection\n";
                 new_socket->close();
             }
             HandleConnection();
@@ -47,11 +49,17 @@ namespace joaquind {
         s->async_read_some(asio::buffer(clients_[s].buff, 1), [this, s](const asio::error_code &error, size_t bytes) {
             if (!error) {
                 HandleUpdate(s);
+                HandleRead(s);
             } else {
-                clients_.erase(s);
-                s->close();
+                std::cout << "Error into HandleRead\n";
+                std::cout << error.message() << '\n';
+                if (s->is_open()) {
+                    mutex_.lock();
+                    clients_.erase(s);
+                    s->close();
+                    mutex_.unlock();
+                }
             }
-            HandleRead(s);
         });
     }
 
