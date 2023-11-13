@@ -17,7 +17,6 @@ namespace joaquind {
         if (!error) {
             HandleUpdate(std::move(s));
         } else if (error != asio::error::operation_aborted) {
-            std::cout << "Error into HandleTimeout\n";
             std::cout << error.message() << '\n';
         }
     }
@@ -37,7 +36,6 @@ namespace joaquind {
             if (!error) {
                 AddNewClient(new_socket);
             } else {
-                std::cout << "Error into HandleConnection\n";
                 new_socket->close();
             }
             HandleConnection();
@@ -51,7 +49,6 @@ namespace joaquind {
                 HandleUpdate(s);
                 HandleRead(s);
             } else {
-                std::cout << "Error into HandleRead\n";
                 std::cout << error.message() << '\n';
                 if (s->is_open()) {
                     mutex_.lock();
