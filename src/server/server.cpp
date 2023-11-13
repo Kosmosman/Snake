@@ -51,6 +51,7 @@ namespace joaquind {
             } else {
                 std::cout << error.message() << '\n';
                 if (s->is_open()) {
+                    count_of_clients.fetch_sub(1);
                     mutex_.lock();
                     clients_.erase(s);
                     s->close();
