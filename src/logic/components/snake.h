@@ -18,14 +18,17 @@ namespace joaquind {
             UP, RIGHT, DOWN, LEFT
         };
 
+        Snake() = default;
         explicit Snake(coord_type coord) : snake_size_{start_snake_size_},
                                            snake_body_(coord.first * coord.second) { Init(coord); };
 
-        const coord_type &GetHead() { return snake_body_[0]; };
+        [[nodiscard]] const coord_type &GetHead() const { return snake_body_[0]; };
 
-        const coord_type &GetTail() { return snake_body_[snake_size_ - 1]; };
+        [[nodiscard]] const coord_type &GetTail() const { return snake_body_[snake_size_ - 1]; };
 
-        const snake_type &GetSnake() { return snake_body_; };
+        [[nodiscard]] const snake_type &GetSnake() const { return snake_body_; };
+
+        [[nodiscard]] size_t GetSize() const { return snake_size_; };
 
         void ChangeDirection(kDirection direction) { direction_ = direction; };
 
@@ -65,7 +68,7 @@ namespace joaquind {
         };
 
         static constexpr size_t start_snake_size_{3};
-        size_t snake_size_;
+        size_t snake_size_{};
         snake_type snake_body_;  // Y, X
         size_t direction_{RIGHT};
     };

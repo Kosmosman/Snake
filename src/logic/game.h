@@ -5,6 +5,7 @@
 #ifndef SNAKE_GAME_H
 #define SNAKE_GAME_H
 
+#include <unordered_map>
 #include "configurations.h"
 
 namespace joaquind {
@@ -13,19 +14,29 @@ namespace joaquind {
     public:
         using coord_type = std::pair<size_t, size_t>;
 
-        Game(Field *f, std::vector<Snake> *s, Meal *m) : game_filed_(f), snake_(s), meal_{m} {
+        Game(Field *f, SnakeBuilder *s, Meal *m) : game_filed_(f), snakes_(s), meal_{m} {
             StartInit();
         };
 
         std::string UpdateField(char button, size_t id) {
             gamer_id_ = id;
-            auto removed_cell{(*snake_)[gamer_id_].GetTail()};
+            auto removed_cell{snakes_->GetSnake(gamer_id_).GetTail()};
             Move(button);
             if (!CheckCell(removed_cell)) {
                 Reset();
             }
             return game_filed_->TransformToString();
         };
+
+        void RemoveUser(size_t snake_id) {
+            for (auto i{0}; i < snakes_->GetSnake(snake_id).GetSize(); ++i)
+                game_filed_->FillCell(snakes_->GetSnake(snake_id).GetSnake()[i], Field::FIELD);
+            snakes_->RemoveSnake(snake_id);
+        }
+
+        void AddUser(size_t snake_id) {
+            snakes_->AddSnake(game_filed_->GetSize(), snake_id);
+        }
 
     private:
 
@@ -35,7 +46,7 @@ namespace joaquind {
         }
 
         void InitSnake() {
-            for (auto &i: (*snake_)[gamer_id_].GetSnake())
+            for (auto &i: snakes_->GetSnake(gamer_id_).GetSnake())
                 game_filed_->FillCell(i, Field::SNAKE);
         };
 
@@ -49,23 +60,23 @@ namespace joaquind {
         void Reset() {
             game_filed_->Clear();
             game_filed_->Init();
-            (*snake_)[gamer_id_].Init(game_filed_->GetSize());
+            snakes_->GetSnake(gamer_id_).Init(game_filed_->GetSize());
             InitMeal();
         }
 
         void Move(char &button) {
             switch (button) {
                 case 'w':
-                    (*snake_)[gamer_id_].ChangeDirection(Snake::UP);
+                    snakes_->GetSnake(gamer_id_).ChangeDirection(Snake::UP);
                     break;
                 case 'd':
-                    (*snake_)[gamer_id_].ChangeDirection(Snake::RIGHT);
+                    snakes_->GetSnake(gamer_id_).ChangeDirection(Snake::RIGHT);
                     break;
                 case 's':
-                    (*snake_)[gamer_id_].ChangeDirection(Snake::DOWN);
+                    snakes_->GetSnake(gamer_id_).ChangeDirection(Snake::DOWN);
                     break;
                 case 'a':
-                    (*snake_)[gamer_id_].ChangeDirection(Snake::LEFT);
+                    snakes_->GetSnake(gamer_id_).ChangeDirection(Snake::LEFT);
                     break;
                 case 'p':
                     while (getchar() != 'p') continue;
@@ -73,15 +84,15 @@ namespace joaquind {
                 default:
                     break;
             }
-            (*snake_)[gamer_id_].Move();
+            snakes_->GetSnake(gamer_id_).Move();
         };
 
         bool CheckCell(coord_type &deleted) {
-            auto head{(*snake_)[gamer_id_].GetHead()};
+            auto head{snakes_->GetSnake(gamer_id_).GetHead()};
             if (game_filed_->GetCell(head) == Field::BORDER || game_filed_->GetCell(head) == Field::SNAKE) {
                 return false;
             } else if (game_filed_->GetCell(head) == Field::MEAL) {
-                (*snake_)[gamer_id_].Increase(deleted);
+                snakes_->GetSnake(gamer_id_).Increase(deleted);
                 game_filed_->FillCell(head, Field::SNAKE);
                 InitMeal();
             } else {
@@ -92,7 +103,7 @@ namespace joaquind {
         };
 
         Field *game_filed_;
-        std::vector<Snake> *snake_;
+        SnakeBuilder *snakes_;
         Meal *meal_;
         size_t gamer_id_{};
     };

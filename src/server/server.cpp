@@ -53,6 +53,7 @@ namespace joaquind {
                 if (s->is_open()) {
                     count_of_clients_.fetch_sub(1);
                     mutex_.lock();
+                    g_->RemoveUser(clients_[s].id);
                     clients_.erase(s);
                     s->close();
                     mutex_.unlock();
@@ -63,9 +64,13 @@ namespace joaquind {
 
     void Server::AddNewClient(socket_ptr socket) {
         if (count_of_clients_.load() == max_count_of_clients) return;
+        mutex_.lock();
+        g_->AddUser(last_id_);
+        mutex_.unlock();
         count_of_clients_.fetch_add(1);
         clients_[socket].id = last_id_++;
         clients_[socket].timer = std::make_shared<asio::steady_timer>(io_);
+
         HandleRead(std::move(socket));
     }
 

@@ -8,10 +8,11 @@ target_include_directories(Utility INTERFACE utility)
 add_library(
         GameLogic INTERFACE
         logic/configurations.h
-        logic/field.h
+        logic/components/field.h
         logic/game.h
-        logic/meal.h
-        logic/snake.h
+        logic/components/meal.h
+        logic/components/snake.h
+        logic/components/snake_builder.h
 )
 
 add_library(Server server/server.cpp server/server.h)
