@@ -46,7 +46,8 @@ namespace joaquind {
         std::mutex mutex_{};
 
         Game *g_;
-        std::atomic<size_t> count_of_clients{};
+        std::atomic<size_t> count_of_clients_{};
+        std::atomic<size_t> last_id_{};
         std::unordered_map<socket_ptr, ClientData> clients_; // socket, client_info
     };
 
