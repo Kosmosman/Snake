@@ -12,7 +12,6 @@ namespace joaquind {
 
     class Game {
     public:
-        using coord_type = std::pair<size_t, size_t>;
 
         Game(Field *f, SnakeBuilder *s, Meal *m) : game_filed_(f), snakes_(s), meal_{m} {
             StartInit();
@@ -20,17 +19,15 @@ namespace joaquind {
 
         std::string UpdateField(char button, size_t id) {
             gamer_id_ = id;
-            auto removed_cell{snakes_->GetSnake(gamer_id_).GetTail()};
             Move(button);
-            if (!CheckCell(removed_cell)) {
+            if (!CheckCell()) {
                 Reset();
             }
             return game_filed_->TransformToString();
         };
 
         void RemoveUser(size_t snake_id) {
-            for (auto i{0}; i < snakes_->GetSnake(snake_id).GetSize(); ++i)
-                game_filed_->FillCell(snakes_->GetSnake(snake_id).GetSnake()[i], Field::FIELD);
+            ClearSnakeCells();
             snakes_->RemoveSnake(snake_id);
         }
 
@@ -51,17 +48,22 @@ namespace joaquind {
         };
 
         void InitMeal() {
-            coord_type tmp{};
+            std::pair<size_t, size_t> tmp{};
             while (game_filed_->GetCell(tmp) != Field::FIELD)
                 tmp = (*meal_)(game_filed_->GetSize());
             game_filed_->FillCell(tmp, Field::MEAL);
         }
 
+        void ClearSnakeCells() {
+            auto snake{snakes_->GetSnake(gamer_id_)};
+            for (auto i{++snake.GetSnake().begin()}; i != snake.GetSnake().end(); ++i)
+                game_filed_->FillCell(*i, Field::kFieldType::FIELD);
+            game_filed_->FillCell(snake.GetPrevTail(), Field::kFieldType::FIELD);
+        }
+
         void Reset() {
-            game_filed_->Clear();
-            game_filed_->Init();
+            ClearSnakeCells();
             snakes_->GetSnake(gamer_id_).Init(game_filed_->GetSize());
-            InitMeal();
         }
 
         void Move(char &button) {
@@ -87,17 +89,18 @@ namespace joaquind {
             snakes_->GetSnake(gamer_id_).Move();
         };
 
-        bool CheckCell(coord_type &deleted) {
+        bool CheckCell() {
             auto head{snakes_->GetSnake(gamer_id_).GetHead()};
+            auto prev_tail{snakes_->GetSnake(gamer_id_).GetPrevTail()};
             if (game_filed_->GetCell(head) == Field::BORDER || game_filed_->GetCell(head) == Field::SNAKE) {
                 return false;
             } else if (game_filed_->GetCell(head) == Field::MEAL) {
-                snakes_->GetSnake(gamer_id_).Increase(deleted);
+                snakes_->GetSnake(gamer_id_).Increase();
                 game_filed_->FillCell(head, Field::SNAKE);
                 InitMeal();
             } else {
                 game_filed_->FillCell(head, Field::SNAKE);
-                game_filed_->FillCell(deleted, Field::FIELD);
+                game_filed_->FillCell(prev_tail, Field::FIELD);
             }
             return true;
         };
