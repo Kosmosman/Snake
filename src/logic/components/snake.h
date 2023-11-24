@@ -7,10 +7,11 @@
 
 #include <vector>
 #include <list>
+#include "abstract_object.h"
 
 namespace joaquind {
 
-    class Snake {
+    class Snake : public AbstractObject {
     public:
         using size_t = unsigned long;
         using coord_type = std::pair<size_t, size_t>;
@@ -27,13 +28,7 @@ namespace joaquind {
 
         [[nodiscard]] const coord_type &GetHead() const { return snake_body_.front(); };
 
-        [[nodiscard]] const coord_type &GetTail() const { return snake_body_.back(); };
-
-        [[nodiscard]] const coord_type &GetPrevTail() const { return prev_tail; };
-
-        [[nodiscard]] const snake_type &GetSnake() const { return snake_body_; };
-
-        [[nodiscard]] size_t GetSize() const { return snake_size_; };
+        [[nodiscard]] const snake_type &GetData() const { return snake_body_; };
 
         void ChangeDirection(kDirection direction) {
             direction_ = direction;

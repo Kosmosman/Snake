@@ -6,79 +6,80 @@
 #define SNAKE_GAME_H
 
 #include <unordered_map>
+#include <utility>
 #include "configurations.h"
+#include "transformator.h"
 
 namespace joaquind {
 
     class Game {
     public:
 
-        Game(Field *f, SnakeBuilder *s, Meal *m) : game_filed_(f), snakes_(s), meal_{m} {
+        Game(ObjectManager *manager, coord_type field_size) : manager_{manager}, field_size_{std::move(field_size)},
+                                                              transformator_(field_size) {
             StartInit();
         };
 
         std::string UpdateField(char button, size_t id) {
             gamer_id_ = id;
             Move(button);
-            if (!CheckCell()) {
-                Reset();
-            }
-            return game_filed_->TransformToString();
+            CheckCell();
+            transformator_.TransformFieldToString(manager_->Get<Field>());
+            transformator_.TransformSnakeToString(manager_->Get<Snake>());
+            transformator_.TransformMealToString(manager_->Get<Meal>());
+            return transformator_.GetData();
         };
 
         void RemoveUser(size_t snake_id) {
-            ClearSnakeCells();
-            snakes_->RemoveSnake(snake_id);
+            manager_->Remove<Snake>(snake_id);
         }
 
-        void AddUser(size_t snake_id) {
-            snakes_->AddSnake(game_filed_->GetSize(), snake_id);
+        void AddUser() {
+            manager_->Create<Snake>(field_size_);
         }
 
     private:
 
         void StartInit() {
-            InitSnake();
-            InitMeal();
+            manager_->Create<Field>(field_size_);
+            manager_->Create<Meal>(field_size_);
         }
 
         void InitSnake() {
-            for (auto &i: snakes_->GetSnake(gamer_id_).GetSnake())
-                game_filed_->FillCell(i, Field::SNAKE);
+            manager_->Get<Snake>()[gamer_id_]->Init(
+                    {field_size_.first / ((gamer_id_ + 2) % field_size_.first),
+                     field_size_.second / ((gamer_id_ + 2) % field_size_.second)});
         };
 
         void InitMeal() {
-            std::pair<size_t, size_t> tmp{};
-            while (game_filed_->GetCell(tmp) != Field::FIELD)
-                tmp = (*meal_)(game_filed_->GetSize());
-            game_filed_->FillCell(tmp, Field::MEAL);
-        }
-
-        void ClearSnakeCells() {
-            auto snake{snakes_->GetSnake(gamer_id_)};
-            for (auto i{++snake.GetSnake().begin()}; i != snake.GetSnake().end(); ++i)
-                game_filed_->FillCell(*i, Field::kFieldType::FIELD);
-            game_filed_->FillCell(snake.GetPrevTail(), Field::kFieldType::FIELD);
+            for (auto &i: manager_->Get<Meal>()) {
+                i.second->Init(field_size_);
+                auto meal_coord{i.second->GetData()};
+                while (manager_->Get<Field>()[0]->GetCell(meal_coord[0]) != Field::FIELD) {
+                    i.second->Init(field_size_);
+                    meal_coord = i.second->GetData();
+                }
+            }
         }
 
         void Reset() {
-            ClearSnakeCells();
-            snakes_->GetSnake(gamer_id_).Init(game_filed_->GetSize());
+            InitSnake();
         }
 
         void Move(char &button) {
+            auto snake = manager_->Get<Snake>()[gamer_id_];
             switch (button) {
                 case 'w':
-                    snakes_->GetSnake(gamer_id_).ChangeDirection(Snake::UP);
+                    snake->ChangeDirection(Snake::UP);
                     break;
                 case 'd':
-                    snakes_->GetSnake(gamer_id_).ChangeDirection(Snake::RIGHT);
+                    snake->ChangeDirection(Snake::RIGHT);
                     break;
                 case 's':
-                    snakes_->GetSnake(gamer_id_).ChangeDirection(Snake::DOWN);
+                    snake->ChangeDirection(Snake::DOWN);
                     break;
                 case 'a':
-                    snakes_->GetSnake(gamer_id_).ChangeDirection(Snake::LEFT);
+                    snake->ChangeDirection(Snake::LEFT);
                     break;
                 case 'p':
                     while (getchar() != 'p') continue;
@@ -86,28 +87,50 @@ namespace joaquind {
                 default:
                     break;
             }
-            snakes_->GetSnake(gamer_id_).Move();
+            snake->Move();
         };
 
-        bool CheckCell() {
-            auto head{snakes_->GetSnake(gamer_id_).GetHead()};
-            auto prev_tail{snakes_->GetSnake(gamer_id_).GetPrevTail()};
-            if (game_filed_->GetCell(head) == Field::BORDER || game_filed_->GetCell(head) == Field::SNAKE) {
-                return false;
-            } else if (game_filed_->GetCell(head) == Field::MEAL) {
-                snakes_->GetSnake(gamer_id_).Increase();
-                game_filed_->FillCell(head, Field::SNAKE);
+        void CheckCell() {
+            auto head_cell{manager_->Get<Snake>()[gamer_id_]->GetHead()};
+            auto head_cell_type{manager_->Get<Field>()[0]->GetCell(head_cell)};
+            if (head_cell_type == Field::BORDER || CheckSnakeIntersect(head_cell)) {
+                Reset();
+            } else if (CheckMealIntersect(head_cell)) {
+                manager_->Get<Snake>()[gamer_id_]->Increase();
                 InitMeal();
-            } else {
-                game_filed_->FillCell(head, Field::SNAKE);
-                game_filed_->FillCell(prev_tail, Field::FIELD);
             }
-            return true;
         };
 
-        Field *game_filed_;
-        SnakeBuilder *snakes_;
-        Meal *meal_;
+        bool CheckSnakeIntersect(coord_type head_cell) {
+            for (auto &[id, snake]: manager_->Get<Snake>()) {
+                if (id != gamer_id_) {
+                    for (auto &cell: snake->GetData()) {
+                        if (head_cell == cell)
+                            return true;
+                    }
+                }
+            }
+            auto snake{manager_->Get<Snake>()[gamer_id_]->GetData()};
+            for (auto i{++snake.begin()}; i != snake.end(); ++i) {
+                if (head_cell == *i)
+                    return true;
+            }
+            return false;
+        }
+
+        bool CheckMealIntersect(coord_type head_cell) {
+            for (auto &[id, meal]: manager_->Get<Meal>()) {
+                for (auto &cell: meal->GetData()) {
+                    if (head_cell == cell)
+                        return true;
+                }
+            }
+            return false;
+        }
+
+        coord_type field_size_{};
+        ObjectManager *manager_{};
+        Transformator transformator_;
         size_t gamer_id_{};
     };
 

@@ -7,6 +7,7 @@
 
 #include <vector>
 #include <iostream>
+#include "abstract_object.h"
 
 namespace joaquind {
     using size_t = unsigned long;
@@ -15,7 +16,7 @@ namespace joaquind {
     constexpr size_t STANDARD_WIDTH = 30;
     constexpr size_t MAX_SIZE = 100;
 
-    class Field {
+    class Field : public AbstractObject {
     public:
         enum kFieldType {
             BORDER = '#', SNAKE = 'x', MEAL = 'o', FIELD = ' '
@@ -29,23 +30,16 @@ namespace joaquind {
             Init();
         };
 
+        explicit Field(coord_type field_size) : Field(field_size.second, field_size.first) {}
+
         Field() : height_{STANDARD_HEIGHT}, width_{STANDARD_WIDTH},
                   field_{height_, std::vector<char>(width_, ' ')} { Init(); };
-
-        void FillCell(coord_type coord, kFieldType type) { field_[coord.first][coord.second] = type; };
 
         kFieldType GetCell(coord_type coord) { return static_cast<kFieldType>(field_[coord.first][coord.second]); };
 
         coord_type GetSize() { return {height_, width_}; };
 
-        void PrintField() {
-            for (const auto &i: field_) {
-                for (const char &j: i) {
-                    std::cout << j;
-                }
-                std::cout << '\n';
-            }
-        }
+        const field_type& GetData() { return field_; };
 
         void Init() {
             if (height_ <= 0 || width_ <= 0) {

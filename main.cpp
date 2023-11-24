@@ -6,10 +6,9 @@
 #include "game.h"
 
 int main() {
-    joaquind::Field field(30, 30);
-    joaquind::SnakeBuilder snake_builder;
-    joaquind::Meal meal;
-    joaquind::Game g(&field, &snake_builder, &meal);
+    int n{30}, m{30};
+    joaquind::ObjectManager om;
+    joaquind::Game g(&om, {n, m});
     joaquind::Server s(&g);
     s.Connect();
     return 0;

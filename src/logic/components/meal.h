@@ -6,19 +6,24 @@
 #define SNAKE_MEAL_H
 
 #include <random>
+#include "abstract_object.h"
 
 namespace joaquind {
-    class Meal {
+    class Meal : public AbstractObject {
     public:
         using size_t = unsigned long;
         using coord_type = std::pair<size_t, size_t>;
 
-        Meal() : mt_(rd_()), dist_(1, 1000) {};
+        explicit Meal(coord_type field_size) : mt_(rd_()), dist_(1, 1000), position_(1) { Init(field_size); };
 
-        coord_type operator()(coord_type coord) {
-            return {dist_(mt_) % coord.first, dist_(mt_) % coord.second};
+        void Init(coord_type coord) {
+            position_[0] = {dist_(mt_) % coord.first, dist_(mt_) % coord.second};
         };
+
+        [[nodiscard]] const std::vector<coord_type>& GetData() const { return position_; };
+
     private:
+        std::vector<coord_type> position_{};
         std::random_device rd_{};
         std::mt19937 mt_;
         std::uniform_int_distribution<int> dist_;

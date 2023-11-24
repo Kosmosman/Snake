@@ -65,7 +65,7 @@ namespace joaquind {
     void Server::AddNewClient(socket_ptr socket) {
         if (count_of_clients_.load() == max_count_of_clients) return;
         mutex_.lock();
-        g_->AddUser(last_id_);
+        g_->AddUser();
         mutex_.unlock();
         count_of_clients_.fetch_add(1);
         clients_[socket].id = last_id_++;
