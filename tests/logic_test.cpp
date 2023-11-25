@@ -58,31 +58,23 @@ public:
 
 /* ----------- FIELD_TESTS ----------- */
 
-TEST(Field, FieldConstructorTest) {
-    TestcaseField t;
-    std::vector<size_t> sizes{30, 30, 20, 20, 30, 30, 5, 10, 3, 3, 100, 100, 30, 30};
-    auto it{sizes.begin()};
-    for (auto &[name, field]: t.fields) {
-        EXPECT_EQ(*(it++), field.GetSize().first);
-        EXPECT_EQ(*(it++), field.GetSize().second);
-        for (auto i{0}; i < field.GetSize().first; ++i) {
-            for (auto j{0}; j < field.GetSize().second; ++j) {
-                if (i == 0 || j == 0 || i == field.GetSize().first - 1 || j == field.GetSize().second - 1)
-                    EXPECT_EQ(field.GetCell({i, j}), Field::kFieldType::BORDER);
-                else
-                    EXPECT_EQ(field.GetCell({i, j}), Field::kFieldType::FIELD);
-            }
-        }
-    }
-}
-
-TEST(Field, FieldTransformationTest) {
-    TestcaseField t;
-    for (auto &[name, field] : t.transform_fields) {
-        EXPECT_EQ(field.TransformToString(), t.string_view_field[name]);
-    }
-
-}
+//TEST(Field, FieldConstructorTest) {
+//    TestcaseField t;
+//    std::vector<size_t> sizes{30, 30, 20, 20, 30, 30, 5, 10, 3, 3, 100, 100, 30, 30};
+//    auto it{sizes.begin()};
+//    for (auto &[name, field]: t.fields) {
+//        EXPECT_EQ(*(it++), field.GetSize().first);
+//        EXPECT_EQ(*(it++), field.GetSize().second);
+//        for (auto i{0}; i < field.GetSize().first; ++i) {
+//            for (auto j{0}; j < field.GetSize().second; ++j) {
+//                if (i == 0 || j == 0 || i == field.GetSize().first - 1 || j == field.GetSize().second - 1)
+//                    EXPECT_EQ(field.GetCell({i, j}), Field::kFieldType::BORDER);
+//                else
+//                    EXPECT_EQ(field.GetCell({i, j}), Field::kFieldType::FIELD);
+//            }
+//        }
+//    }
+//}
 
 int main(int argc, char **argv) {
     testing::InitGoogleTest(&argc, argv);

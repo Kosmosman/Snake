@@ -13,7 +13,10 @@ add_library(
         logic/game.h
         logic/components/meal.h
         logic/components/snake.h
-        logic/components/object_builder.h logic/components/object_manager.h logic/transformator.h)
+        logic/components/object_builder.h logic/components/object_manager.h logic/transformator.h logic/components/validator.h)
+
+target_link_libraries(GameLogic INTERFACE Utility)
+target_include_directories(GameLogic INTERFACE utility)
 
 add_library(Server server/server.cpp server/server.h)
 target_link_libraries(Server PUBLIC Asio Utility GameLogic)

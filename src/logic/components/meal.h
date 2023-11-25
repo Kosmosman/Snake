@@ -17,7 +17,7 @@ namespace joaquind {
         explicit Meal(coord_type field_size) : mt_(rd_()), dist_(1, 1000), position_(1) { Init(field_size); };
 
         void Init(coord_type coord) {
-            position_[0] = {dist_(mt_) % coord.first, dist_(mt_) % coord.second};
+            position_[0] = {dist_(mt_) % (coord.first - 1) + 1, dist_(mt_) % (coord.second - 1) + 1};
         };
 
         [[nodiscard]] const std::vector<coord_type>& GetData() const { return position_; };

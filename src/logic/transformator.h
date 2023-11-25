@@ -8,7 +8,7 @@
 #include <string>
 #include <vector>
 #include <memory>
-#include <unordered_map>
+#include <queue>
 #include "components/abstract_object.h"
 #include "components/field.h"
 
@@ -19,15 +19,14 @@ namespace joaquind {
     class Transformator {
     public:
         explicit Transformator(coord_type field_size) : message_(field_size.second,
-                                                                 std::string(field_size.first, ' ')) {}
+                                                                 std::string(field_size.first, Field::kFieldType::FIELD)) {}
 
         void TransformFieldToString(std::unordered_map<size_t, std::shared_ptr<Field>> &objects) {
             for (auto &[id, object]: objects) {
                 auto obj_ptr = object->GetData();
-                for (int i{}; i < obj_ptr.size(); ++i) {
-                    for (int j{}; j < obj_ptr[0].size(); ++j) {
-                        message_[i][j] = obj_ptr[i][j];
-                    }
+                for (auto &i: obj_ptr) {
+                    busy_cells_queue_.push({i.first, i.second});
+                    message_[i.first][i.second] = Field::kFieldType::BORDER;
                 }
             }
         }
@@ -36,6 +35,7 @@ namespace joaquind {
             for (auto &[id, object]: objects) {
                 auto obj_ptr = object->GetData();
                 for (auto &i: obj_ptr) {
+                    busy_cells_queue_.push({i.first, i.second});
                     message_[i.first][i.second] = Field::kFieldType::SNAKE;
                 }
             }
@@ -45,6 +45,7 @@ namespace joaquind {
             for (auto &[id, object]: objects) {
                 auto obj_ptr = object->GetData();
                 for (auto &i: obj_ptr) {
+                    busy_cells_queue_.push({i.first, i.second});
                     message_[i.first][i.second] = Field::kFieldType::MEAL;
                 }
             }
@@ -53,10 +54,19 @@ namespace joaquind {
         std::string GetData() {
             std::ostringstream oss;
             std::copy(message_.begin(), message_.end(), std::ostream_iterator<std::string>(oss, "\n"));
+            ClearBusyCells();
             return oss.str();
         };
 
+        void ClearBusyCells() {
+            while (!busy_cells_queue_.empty()) {
+                message_[busy_cells_queue_.front().first][busy_cells_queue_.front().second] = Field::kFieldType::FIELD;
+                busy_cells_queue_.pop();
+            }
+        }
+
     private:
+        std::queue<coord_type> busy_cells_queue_{};
         std::vector<std::string> message_{};
     };
 

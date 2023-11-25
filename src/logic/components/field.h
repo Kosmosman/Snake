@@ -8,13 +8,13 @@
 #include <vector>
 #include <iostream>
 #include "abstract_object.h"
+#include "one_dimensional_vector.h"
 
 namespace joaquind {
     using size_t = unsigned long;
 
     constexpr size_t STANDARD_HEIGHT = 30;
     constexpr size_t STANDARD_WIDTH = 30;
-    constexpr size_t MAX_SIZE = 100;
 
     class Field : public AbstractObject {
     public:
@@ -22,57 +22,36 @@ namespace joaquind {
             BORDER = '#', SNAKE = 'x', MEAL = 'o', FIELD = ' '
         };
         using coord_type = std::pair<size_t, size_t>;
-        using field_type = std::vector<std::vector<char>>;
+        using field_type = OneDimensionalVector<coord_type>;
 
-        Field(size_t height, size_t width) : height_{CheckCorrectFieldSize(height, width) ? height : STANDARD_HEIGHT},
-                                             width_{CheckCorrectFieldSize(height, width) ? width : STANDARD_WIDTH},
-                                             field_{height_, std::vector<char>(width_, ' ')} {
-            Init();
-        };
+        Field() : height_{STANDARD_HEIGHT}, width_{STANDARD_WIDTH} { Init(); };
 
-        explicit Field(coord_type field_size) : Field(field_size.second, field_size.first) {}
+        Field(size_t height, size_t width) : height_{height}, width_{width} { Init(); };
 
-        Field() : height_{STANDARD_HEIGHT}, width_{STANDARD_WIDTH},
-                  field_{height_, std::vector<char>(width_, ' ')} { Init(); };
+        explicit Field(coord_type field_size) : Field(field_size.second, field_size.first) { Init(); };
 
-        kFieldType GetCell(coord_type coord) { return static_cast<kFieldType>(field_[coord.first][coord.second]); };
-
-        coord_type GetSize() { return {height_, width_}; };
-
-        const field_type& GetData() { return field_; };
+        const field_type &GetData() { return field_; };
 
         void Init() {
-            if (height_ <= 0 || width_ <= 0) {
-                height_ = STANDARD_HEIGHT;
-                width_ = STANDARD_WIDTH;
-            }
-            for (int i = 0; i < width_; ++i) field_[0][i] = field_[height_ - 1][i] = BORDER;
-            for (int i = 0; i < height_; ++i) field_[i][0] = field_[i][width_ - 1] = BORDER;
+            field_.reserve((height_ + width_) * 2 - 4);
+
+            for (int i = 0; i < width_; ++i) field_.emplace_back(0, i);
+            for (int i = 0; i < width_; ++i) field_.emplace_back(height_ - 1, i);
+            for (int i = 1; i < height_ - 1; ++i) field_.emplace_back(i, 0);
+            for (int i = 1; i < height_ - 1; ++i) field_.emplace_back(i, width_ - 1);
         }
 
-        void Clear() {
-            for (int i = 1; i < height_ - 1; ++i)
-                for (int j = 1; j < width_ - 1; ++j)
-                    field_[i][j] = FIELD;
+        void Resize(size_t new_height, size_t new_width) {
+            field_.clear();
+            height_ = new_height;
+            width_ = new_width;
+            Init();
         }
-
-        std::string TransformToString() {
-            std::string string_view;
-            string_view.reserve(height_ * width_ + height_);
-            for (auto &i: field_) {
-                string_view += std::string{i.begin(), i.end()} + '\n';
-            }
-            return std::move(string_view);
-        }
-
-
 
     private:
         size_t height_;
         size_t width_;
-        field_type field_;
-
-        bool CheckCorrectFieldSize(size_t h, size_t w) { return h * w > 0 && h <= MAX_SIZE && w <= MAX_SIZE; };
+        field_type field_{}; // Y, X
     };
 
 } // joaquind

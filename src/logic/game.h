@@ -53,11 +53,18 @@ namespace joaquind {
 
         void InitMeal() {
             for (auto &i: manager_->Get<Meal>()) {
-                i.second->Init(field_size_);
-                auto meal_coord{i.second->GetData()};
-                while (manager_->Get<Field>()[0]->GetCell(meal_coord[0]) != Field::FIELD) {
+                auto pass{false};
+                while (!pass) {
                     i.second->Init(field_size_);
-                    meal_coord = i.second->GetData();
+                    auto meal_coord{i.second->GetData()};
+                    pass = true;
+                    for (auto &[obj_id, snake]: manager_->Get<Snake>()) {
+                        for (auto &k: snake->GetData()) {
+                            if (k == meal_coord[0]) {
+                                pass = false;
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -92,14 +99,23 @@ namespace joaquind {
 
         void CheckCell() {
             auto head_cell{manager_->Get<Snake>()[gamer_id_]->GetHead()};
-            auto head_cell_type{manager_->Get<Field>()[0]->GetCell(head_cell)};
-            if (head_cell_type == Field::BORDER || CheckSnakeIntersect(head_cell)) {
+            if (CheckBorderIntersect(head_cell) || CheckSnakeIntersect(head_cell)) {
                 Reset();
             } else if (CheckMealIntersect(head_cell)) {
                 manager_->Get<Snake>()[gamer_id_]->Increase();
                 InitMeal();
             }
         };
+
+        bool CheckBorderIntersect(coord_type head_cell) {
+            for (auto &[id, field]: manager_->Get<Field>()) {
+                for (auto &cell: field->GetData()) {
+                    if (head_cell == cell)
+                        return true;
+                }
+            }
+            return false;
+        }
 
         bool CheckSnakeIntersect(coord_type head_cell) {
             for (auto &[id, snake]: manager_->Get<Snake>()) {
