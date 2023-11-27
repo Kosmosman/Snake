@@ -57,8 +57,6 @@ namespace joaquind {
                     clients_.erase(s);
                     s->close();
                     mutex_.unlock();
-                    if (clients_.empty())
-                        exit(0);
                 }
             }
         });
@@ -83,7 +81,6 @@ namespace joaquind {
             i.first->write_some(asio::buffer(field));
         }
     }
-
 
     bool InputValidator::Validate(char ch) {
         auto tmp_ch = prev_char_;
