@@ -46,8 +46,7 @@ namespace joaquind {
     void Server::HandleRead(socket_ptr s) {
         s->async_read_some(asio::buffer(clients_[s].buff, 1), [this, s](const asio::error_code &error, size_t bytes) {
             if (!error) {
-                if (validator_.Validate(clients_[s].buff[0]))
-                    HandleUpdate(s);
+                if (validator_.Validate(clients_[s].buff[0])) HandleUpdate(s);
                 HandleRead(s);
             } else {
                 std::cout << error.message() << '\n';
