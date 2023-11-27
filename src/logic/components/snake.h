@@ -30,10 +30,6 @@ namespace joaquind {
 
         [[nodiscard]] const snake_type &GetData() const { return snake_body_; };
 
-        void ChangeDirection(kDirection direction) {
-            direction_ = direction;
-        };
-
         void Init(coord_type coord) {
             snake_size_ = start_snake_size_;
             snake_body_.resize(start_snake_size_);
@@ -44,6 +40,36 @@ namespace joaquind {
                 *(it++) = {coord.first / 2, coord.second / 2 - i};
         };
 
+        void SetDirectionAndMove(char button) {
+            switch (button) {
+                case 'w':
+                    if (direction_ != Snake::DOWN) ChangeDirection(Snake::UP);
+                    break;
+                case 'd':
+                    if (direction_ != Snake::LEFT) ChangeDirection(Snake::RIGHT);
+                    break;
+                case 's':
+                    if (direction_ != Snake::UP) ChangeDirection(Snake::DOWN);
+                    break;
+                case 'a':
+                    if (direction_ != Snake::RIGHT) ChangeDirection(Snake::LEFT);
+                    break;
+                default:
+                    break;
+            }
+            Move();
+        }
+
+        void ChangeDirection(kDirection direction) {
+            direction_ = direction;
+        };
+
+        void Increase() {
+            snake_body_.emplace_back(prev_tail);
+            ++snake_size_;
+        };
+
+    private:
         void Move() {
             switch (direction_) {
                 case RIGHT:
@@ -61,12 +87,6 @@ namespace joaquind {
             }
         };
 
-        void Increase() {
-            snake_body_.emplace_back(prev_tail);
-            ++snake_size_;
-        };
-
-    private:
         void MakeMove(int diff_v, int diff_h) {
             auto tmp = std::make_pair(snake_body_.front().first + diff_v, snake_body_.front().second + diff_h);
             snake_body_.push_front(std::move(tmp));
