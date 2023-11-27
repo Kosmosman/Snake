@@ -10,12 +10,21 @@
 #include <unordered_map>
 
 namespace joaquind {
+
+    class InputValidator {
+    public:
+        InputValidator()=default;
+        bool Validate(char ch);
+    private:
+        char prev_char_{};
+    };
+
     constexpr size_t max_count_of_clients = 2;
     constexpr size_t timer_iterator = 1000;
 
     struct ClientData {
         size_t id{};
-        std::shared_ptr<asio::steady_timer> timer{};
+        std::unique_ptr<asio::steady_timer> timer{};
         char buff[1]{};
     };
 
@@ -49,6 +58,7 @@ namespace joaquind {
         std::atomic<size_t> count_of_clients_{};
         std::atomic<size_t> last_id_{};
         std::unordered_map<socket_ptr, ClientData> clients_; // socket, client_info
+        InputValidator validator_{};
     };
 
 } // joaquind

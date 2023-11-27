@@ -46,7 +46,8 @@ namespace joaquind {
     void Server::HandleRead(socket_ptr s) {
         s->async_read_some(asio::buffer(clients_[s].buff, 1), [this, s](const asio::error_code &error, size_t bytes) {
             if (!error) {
-                HandleUpdate(s);
+                if (validator_.Validate(clients_[s].buff[0]))
+                    HandleUpdate(s);
                 HandleRead(s);
             } else {
                 std::cout << error.message() << '\n';
@@ -57,6 +58,8 @@ namespace joaquind {
                     clients_.erase(s);
                     s->close();
                     mutex_.unlock();
+                    if (clients_.empty())
+                        exit(0);
                 }
             }
         });
@@ -69,7 +72,7 @@ namespace joaquind {
         mutex_.unlock();
         count_of_clients_.fetch_add(1);
         clients_[socket].id = last_id_++;
-        clients_[socket].timer = std::make_shared<asio::steady_timer>(io_);
+        clients_[socket].timer = std::make_unique<asio::steady_timer>(io_);
 
         HandleRead(std::move(socket));
     }
@@ -83,4 +86,11 @@ namespace joaquind {
     }
 
 
+    bool InputValidator::Validate(char ch) {
+        auto tmp_ch = prev_char_;
+        prev_char_ = ch;
+        if (ch == tmp_ch) return false;
+        if (!std::strchr("wasd", ch)) return false;
+        return true;
+    }
 } // joaquind

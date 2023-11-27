@@ -18,6 +18,9 @@ add_library(
 target_link_libraries(GameLogic INTERFACE Utility)
 target_include_directories(GameLogic INTERFACE utility)
 
+add_library(Timer INTERFACE logic/timer/observer.h)
+target_include_directories(Timer INTERFACE logic/timer)
+
 add_library(Server server/server.cpp server/server.h)
 target_link_libraries(Server PUBLIC Asio Utility GameLogic)
 target_include_directories(Server PUBLIC server)
