@@ -3,9 +3,12 @@
 //
 
 #include "client.h"
+#include "window.h"
 
 int main() {
     joaquind::Client client;
+    joaquind::Window w;
+    w.Init();
     client.Connect();
     return 0;
 }
