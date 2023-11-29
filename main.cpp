@@ -7,8 +7,9 @@
 
 int main() {
     joaquind::Client client;
-    joaquind::Window w;
+    joaquind::MainWindow w;
+    std::thread t{[&]() { client.Connect(); }};
+    t.detach();
     w.Init();
-    client.Connect();
     return 0;
 }
