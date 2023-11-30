@@ -6,8 +6,8 @@
 #include "window.h"
 
 int main() {
-    joaquind::Client client;
     joaquind::MainWindow w;
+    joaquind::Client client;
     std::thread t{[&]() { client.Connect(); }};
     t.detach();
     w.Init();

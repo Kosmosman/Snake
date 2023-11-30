@@ -9,30 +9,14 @@
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
 #include "glad/gl.h"
+#include "abstract_window.h"
 #include "GLFW/glfw3.h"
+#include "observer.h"
 #include <cmath>
 
 namespace joaquind {
 
-    class AbstractWindow {
-    public:
-        enum class WindowType {
-            kBasicWindow,
-            kMainWindow
-        };
-
-        virtual ~AbstractWindow() = default;
-
-        virtual void Init() = 0;
-
-        [[nodiscard]] const WindowType& GetType() const noexcept { return type_; }
-
-    protected:
-        WindowType type_{WindowType::kBasicWindow};
-    };
-
-
-    class MainWindow : public AbstractWindow {
+    class MainWindow : public AbstractWindow, Observer {
     public:
         MainWindow() : height_{640}, width_{640} {
             type_ = WindowType::kMainWindow;
@@ -45,36 +29,10 @@ namespace joaquind {
         }
 
         void Init() override {
-            // Init start settings
-            glfwSetErrorCallback(ErrorCallback);
-            if (!glfwInit()) {
-                throw std::bad_alloc();
-            }
-            const char* glsl_version = "#version 150";
-            glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-            glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
-            glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-            glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+            SetGLFWSettings();
+            CreateWindow();
+            SetImguiSettings();
 
-            // Create window, set context
-            window_ = glfwCreateWindow(1200, 800, "Hello", nullptr, nullptr);
-            if (!window_) {
-                glfwTerminate();
-                throw std::bad_alloc();
-            }
-            glfwMakeContextCurrent(window_);
-            gladLoadGL(glfwGetProcAddress);
-            glfwSwapInterval(1);
-
-            // Set dear ImGui settings
-            IMGUI_CHECKVERSION();
-            ImGui::CreateContext();
-            auto io = ImGui::GetIO();
-            (void)io;
-            io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
-            ImGui::StyleColorsDark();
-            ImGui_ImplGlfw_InitForOpenGL(window_, true);
-            ImGui_ImplOpenGL3_Init(glsl_version);
             ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
             // Main Loop
@@ -85,7 +43,10 @@ namespace joaquind {
                 ImGui_ImplGlfw_NewFrame();
                 ImGui::NewFrame();
 
-                ImGui::Begin("Hello World");
+                ImGui::SetNextWindowPos(ImVec2(0, 240));
+                ImGui::SetNextWindowSize(ImVec2(640, 400));
+
+                ImGui::Begin("Snake", nullptr, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove);
                 ImGui::End();
 
                 ImGui::Render();
@@ -107,9 +68,66 @@ namespace joaquind {
             glfwTerminate();
         }
 
+        void OnUpdate(const std::vector<FieldCell>& cells) override {
+            ImDrawList* draw_list = ImGui::GetWindowDrawList();
+            for (auto &i: cells) {
+                if (i.type == CellType::kBorder) {
+                    const ImVec2 pos_start{static_cast<float>(i.x - 1), static_cast<float>(i.y - 1)};
+                    const ImVec2 pos_end{static_cast<float>(i.x + 1), static_cast<float>(i.y + 1)};
+                    draw_list->AddRectFilled(pos_start, pos_end, 250);
+                } else if (i.type == CellType::kSnake) {
+                    const ImVec2 pos{static_cast<float>(i.x), static_cast<float>(i.y)};
+                    draw_list->AddCircleFilled(pos, 1, 200, 30);
+                } else if (i.type == CellType::kMeal) {
+                    const ImVec2 pos{static_cast<float>(i.x), static_cast<float>(i.y)};
+                    draw_list->AddCircleFilled(pos, 1, 150, 30);
+                }
+            }
+        }
+
     private:
         static void ErrorCallback(int error, const char *description) {
             fprintf(stderr, "Error: %s\n", description);
+        }
+
+        void SetGLFWSettings() {
+            // Init start settings
+            glfwSetErrorCallback(ErrorCallback);
+            if (!glfwInit()) {
+                throw std::bad_alloc();
+            }
+            glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+            glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
+            glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+            glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+            glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
+
+
+        }
+
+        void CreateWindow() {
+            // Create window, set context
+            window_ = glfwCreateWindow(width_, height_, "Hello", nullptr, nullptr);
+            if (!window_) {
+                glfwTerminate();
+                throw std::bad_alloc();
+            }
+            glfwMakeContextCurrent(window_);
+            gladLoadGL(glfwGetProcAddress);
+            glfwSwapInterval(1);
+        }
+
+        void SetImguiSettings() {
+            IMGUI_CHECKVERSION();
+            ImGui::CreateContext();
+            ImGui::StyleColorsDark();
+            const char* glsl_version = "#version 150";
+            ImGui_ImplGlfw_InitForOpenGL(window_, true);
+            ImGui_ImplOpenGL3_Init(glsl_version);
+
+            auto io = ImGui::GetIO();
+            (void)io;
+            io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
         }
 
         GLFWwindow *window_{};
@@ -118,17 +136,7 @@ namespace joaquind {
         char *title_{};
     };
 
-    class WindowsFabric {
-    public:
-        AbstractWindow *Create(AbstractWindow::WindowType type) {
-            switch (type) {
-                case AbstractWindow::WindowType::kMainWindow:
-                    return new MainWindow;
-                default:
-                    return nullptr;
-            }
-        }
-    };
+
 
 }; // joaquind
 

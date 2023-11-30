@@ -3,6 +3,7 @@
 //
 
 #include "client.h"
+#include "adapter.h"
 #include <termios.h>
 #include <iostream>
 
@@ -43,6 +44,11 @@ namespace joaquind {
                                else
                                    ReadFromSocket();
                            });
+    }
+
+    void Client::TranslateToMainWindow() {
+        auto data = Adapter<std::vector<char>>::TransformToCoordType(buffer_);
+
     }
 
     void Client::PrintField() {
