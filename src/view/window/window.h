@@ -12,6 +12,7 @@
 #include "abstract_window.h"
 #include "GLFW/glfw3.h"
 #include "observer.h"
+#include "types.h"
 #include <cmath>
 
 namespace joaquind {
@@ -72,11 +73,10 @@ namespace joaquind {
 
         void RenderPrimitives() {
             ImDrawList *draw_list = ImGui::GetWindowDrawList();
-            CellType prev{};
             for (auto &i: cells_) {
                 if (i.type == CellType::kBorder) {
-                    const ImVec2 pos_start{static_cast<float>(i.x + (prev == CellType::kField))*10, static_cast<float>(i.y)*10};
-                    const ImVec2 pos_end{static_cast<float>(i.x + 1 + (prev == CellType::kField))*10, static_cast<float>(i.y + 1)*10};
+                    const ImVec2 pos_start{static_cast<float>(i.x)*10, static_cast<float>(i.y)*10};
+                    const ImVec2 pos_end{static_cast<float>(i.x + 1)*10, static_cast<float>(i.y + 1)*10};
                     ImU32 color = IM_COL32(255, 0, 0, 255);
                     draw_list->AddRectFilled(pos_start, pos_end, color);
                 } else if (i.type == CellType::kSnake) {
@@ -88,7 +88,6 @@ namespace joaquind {
                     ImU32 color = IM_COL32(0, 255, 0, 255);
                     draw_list->AddCircleFilled(pos, 5, color, 30);
                 }
-                prev = i.type;
             }
         }
 

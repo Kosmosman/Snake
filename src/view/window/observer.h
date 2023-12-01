@@ -5,6 +5,7 @@
 #ifndef SNAKE_OBSERVER_H
 #define SNAKE_OBSERVER_H
 #include <vector>
+#include <types.h>
 
 namespace joaquind {
     class Observer {
