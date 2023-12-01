@@ -12,7 +12,7 @@ add_library(glad
 
 add_library(Window INTERFACE
         window/window.h
-        window/abstract_window.h window/windows_fabric.h window/observer.h window/adapter.h window/types.h)
+        window/abstract_window.h window/windows_fabric.h window/observer.h window/interpreter.h window/types.h)
 
 target_link_libraries(Window INTERFACE imguiLib glad)
 target_include_directories(Window INTERFACE lib/imgui window lib/glad/include)

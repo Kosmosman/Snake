@@ -3,7 +3,7 @@
 //
 
 #include "client.h"
-#include "adapter.h"
+#include "interpreter.h"
 #include <termios.h>
 #include <iostream>
 
@@ -39,22 +39,38 @@ namespace joaquind {
     void Client::ReadFromSocket() {
         s_.async_read_some(asio::buffer(buffer_),
                            [this](const asio::error_code &e, std::size_t bytes) {
-                               if (!e && bytes)
+                               if (!e && bytes) {
                                    PrintField();
-                               else
+                                   NotifyObservers();
+                               } else {
                                    ReadFromSocket();
+                               }
                            });
     }
 
     void Client::TranslateToMainWindow() {
-        auto data = Adapter<std::vector<char>>::TransformToCoordType(buffer_);
-
+        std::lock_guard<std::mutex> lock(mutex_);
+        auto data = Interpreter<std::vector<char>>::TransformToCoordType(buffer_);
+        for (auto &i: observers_)
+            i->OnUpdate(data);
     }
 
     void Client::PrintField() {
         for (int i{}; buffer_[i]; ++i)
             std::cout << buffer_[i];
         ReadFromSocket();
+    }
+
+    void Client::AddObserver(Observer *obs) {
+        observers_.push_back(obs);
+    }
+
+    void Client::RemoveObserver(Observer *obs) {
+        observers_.remove(obs);
+    }
+
+    void Client::NotifyObservers() {
+        TranslateToMainWindow();
     }
 
 

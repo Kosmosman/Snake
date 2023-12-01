@@ -7,9 +7,11 @@
 
 int main() {
     joaquind::MainWindow w;
+    w.Init();
     joaquind::Client client;
+    client.AddObserver(&w);
     std::thread t{[&]() { client.Connect(); }};
     t.detach();
-    w.Init();
+    w.Start();
     return 0;
 }

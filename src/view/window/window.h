@@ -16,7 +16,7 @@
 
 namespace joaquind {
 
-    class MainWindow : public AbstractWindow, Observer {
+    class MainWindow : public AbstractWindow, public Observer {
     public:
         MainWindow() : height_{640}, width_{640} {
             type_ = WindowType::kMainWindow;
@@ -32,8 +32,12 @@ namespace joaquind {
             SetGLFWSettings();
             CreateWindow();
             SetImguiSettings();
+        }
 
+        void Start() {
             ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
+
+            while (cells_.empty());
 
             // Main Loop
             while (!glfwWindowShouldClose(window_)) {
@@ -42,53 +46,69 @@ namespace joaquind {
                 ImGui_ImplOpenGL3_NewFrame();
                 ImGui_ImplGlfw_NewFrame();
                 ImGui::NewFrame();
+                ImGui::SetNextWindowPos(ImVec2(0, 0));
+                ImGui::SetNextWindowSize(ImVec2(640, 640));
 
-                ImGui::SetNextWindowPos(ImVec2(0, 240));
-                ImGui::SetNextWindowSize(ImVec2(640, 400));
 
                 ImGui::Begin("Snake", nullptr, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove);
+                RenderPrimitives();
                 ImGui::End();
+
 
                 ImGui::Render();
                 int display_w, display_h;
                 glfwGetFramebufferSize(window_, &display_w, &display_h);
                 glViewport(0, 0, display_w, display_h);
-                glClearColor(clear_color.x * clear_color.w, clear_color.y * clear_color.w, clear_color.z * clear_color.w, clear_color.w);
+                glClearColor(clear_color.x * clear_color.w, clear_color.y * clear_color.w,
+                             clear_color.z * clear_color.w, clear_color.w);
                 glClear(GL_COLOR_BUFFER_BIT);
-                ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
+                ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
                 glfwSwapBuffers(window_);
             }
 
-            ImGui_ImplOpenGL3_Shutdown();
-            ImGui_ImplGlfw_Shutdown();
-            ImGui::DestroyContext();
+            DestroyWindows();
+        };
 
-            glfwDestroyWindow(window_);
-            glfwTerminate();
+        void RenderPrimitives() {
+            ImDrawList *draw_list = ImGui::GetWindowDrawList();
+            CellType prev{};
+            for (auto &i: cells_) {
+                if (i.type == CellType::kBorder) {
+                    const ImVec2 pos_start{static_cast<float>(i.x + (prev == CellType::kField))*10, static_cast<float>(i.y)*10};
+                    const ImVec2 pos_end{static_cast<float>(i.x + 1 + (prev == CellType::kField))*10, static_cast<float>(i.y + 1)*10};
+                    ImU32 color = IM_COL32(255, 0, 0, 255);
+                    draw_list->AddRectFilled(pos_start, pos_end, color);
+                } else if (i.type == CellType::kSnake) {
+                    const ImVec2 pos{static_cast<float>(i.x + 1)*10, static_cast<float>(i.y + 1)*10};
+                    ImU32 color = IM_COL32(0, 0, 255, 255);
+                    draw_list->AddCircleFilled(pos, 5, color, 30);
+                } else if (i.type == CellType::kMeal) {
+                    const ImVec2 pos{static_cast<float>(i.x + 1)*10, static_cast<float>(i.y + 1)*10};
+                    ImU32 color = IM_COL32(0, 255, 0, 255);
+                    draw_list->AddCircleFilled(pos, 5, color, 30);
+                }
+                prev = i.type;
+            }
         }
 
-        void OnUpdate(const std::vector<FieldCell>& cells) override {
-            ImDrawList* draw_list = ImGui::GetWindowDrawList();
-            for (auto &i: cells) {
-                if (i.type == CellType::kBorder) {
-                    const ImVec2 pos_start{static_cast<float>(i.x - 1), static_cast<float>(i.y - 1)};
-                    const ImVec2 pos_end{static_cast<float>(i.x + 1), static_cast<float>(i.y + 1)};
-                    draw_list->AddRectFilled(pos_start, pos_end, 250);
-                } else if (i.type == CellType::kSnake) {
-                    const ImVec2 pos{static_cast<float>(i.x), static_cast<float>(i.y)};
-                    draw_list->AddCircleFilled(pos, 1, 200, 30);
-                } else if (i.type == CellType::kMeal) {
-                    const ImVec2 pos{static_cast<float>(i.x), static_cast<float>(i.y)};
-                    draw_list->AddCircleFilled(pos, 1, 150, 30);
-                }
-            }
+        void OnUpdate(const std::vector<FieldCell> &cell) override {
+            cells_ = cell;
         }
 
     private:
         static void ErrorCallback(int error, const char *description) {
             fprintf(stderr, "Error: %s\n", description);
         }
+
+        void DestroyWindows() {
+            ImGui_ImplOpenGL3_Shutdown();
+            ImGui_ImplGlfw_Shutdown();
+            ImGui::DestroyContext();
+            glfwDestroyWindow(window_);
+            glfwTerminate();
+            exit(0);
+        };
 
         void SetGLFWSettings() {
             // Init start settings
@@ -121,12 +141,12 @@ namespace joaquind {
             IMGUI_CHECKVERSION();
             ImGui::CreateContext();
             ImGui::StyleColorsDark();
-            const char* glsl_version = "#version 150";
+            const char *glsl_version = "#version 150";
             ImGui_ImplGlfw_InitForOpenGL(window_, true);
             ImGui_ImplOpenGL3_Init(glsl_version);
 
             auto io = ImGui::GetIO();
-            (void)io;
+            (void) io;
             io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
         }
 
@@ -134,8 +154,9 @@ namespace joaquind {
         int height_{};
         int width_{};
         char *title_{};
-    };
 
+        std::vector<FieldCell> cells_{};
+    };
 
 
 }; // joaquind

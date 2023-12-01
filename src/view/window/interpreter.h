@@ -2,8 +2,8 @@
 // Created by Joaquina Daeron on 11/30/23.
 //
 
-#ifndef SNAKE_ADAPTER_H
-#define SNAKE_ADAPTER_H
+#ifndef SNAKE_INTERPRETER_H
+#define SNAKE_INTERPRETER_H
 
 #include <string>
 #include <vector>
@@ -17,7 +17,7 @@ namespace joaquind {
     };
 
     template <Iterable Container>
-    class Adapter {
+    class Interpreter {
     public:
         static std::vector<FieldCell> TransformToCoordType(Container &s) {
             std::vector<FieldCell> field(s.size());
@@ -28,7 +28,8 @@ namespace joaquind {
                     x = 0;
                     ++y;
                 } else {
-                    field[counter++] = {x + 1, y + 1, ChooseType(i)};
+                    field[counter++] = {x, y, ChooseType(i)};
+                    ++x;
                 }
             }
             field.resize(counter - 1);
@@ -54,4 +55,4 @@ namespace joaquind {
 }
 
 
-#endif //SNAKE_ADAPTER_H
+#endif //SNAKE_INTERPRETER_H
