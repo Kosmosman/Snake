@@ -22,37 +22,24 @@ namespace joaquind {
     }
 
     void Client::Session() {
-        ReadFromConsole();
         ReadFromSocket();
     }
 
     void Client::WriteToSocket() {
-        s_.async_write_some(asio::buffer(symbol_, 1),
-                            [this](const asio::error_code &e, std::size_t) { if (!e) ReadFromConsole(); });
-    }
-
-    void Client::ReadFromConsole() {
-        input_.async_read_some(asio::buffer(symbol_, 1),
-                               [this](const asio::error_code &e, std::size_t) { if (!e) WriteToSocket(); });
+        s_.write_some(asio::buffer(symbol_, 1));
     }
 
     void Client::ReadFromSocket() {
         s_.async_read_some(asio::buffer(buffer_),
                            [this](const asio::error_code &e, std::size_t bytes) {
                                if (!e && bytes) {
+                                   buffer_.resize(bytes);
                                    PrintField();
                                    NotifyObservers();
                                } else {
                                    ReadFromSocket();
                                }
                            });
-    }
-
-    void Client::TranslateToMainWindow() {
-        std::lock_guard<std::mutex> lock(mutex_);
-        auto data = Interpreter<std::vector<char>>::TransformToCoordType(buffer_);
-        for (auto &i: observers_)
-            i->OnUpdate(data);
     }
 
     void Client::PrintField() {
@@ -70,7 +57,16 @@ namespace joaquind {
     }
 
     void Client::NotifyObservers() {
-        TranslateToMainWindow();
+        std::lock_guard<std::mutex> lock(mutex_);
+        auto data = Interpreter<std::vector<char>>::TransformToCoordType(buffer_);
+        for (auto &i: observers_)
+            i->OnUpdate(data);
+    }
+
+    void Client::OnKeyPressed(char ch) {
+        std::cout << "Was pressed " << ch << '\n';
+        symbol_[0] = ch;
+        WriteToSocket();
     }
 
 

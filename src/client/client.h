@@ -15,14 +15,20 @@
 
 namespace joaquind {
 
-    class Client {
+    class ClientObserver {
+    public:
+        virtual ~ClientObserver()=default;
+        virtual void OnUpdate(char ch) = 0;
+    };
+
+    class Client : public KeyObserver{
     public:
 
         Client() : buffer_(1024) {}
 
         void Connect();
 
-        void AddObserver(Observer* obs);
+        void AddObserver(Observer *obs);
 
         void RemoveObserver(Observer *obs);
 
@@ -35,22 +41,20 @@ namespace joaquind {
 
         void WriteToSocket();
 
-        void ReadFromConsole();
-
         void ReadFromSocket();
 
         void PrintField();
 
-        void TranslateToMainWindow();
+        void OnKeyPressed(char ch) override;
 
         asio::io_context io_{};
         asio::ip::tcp::endpoint ep_{asio::ip::address::from_string("127.0.0.1"), 5000};
         asio::ip::tcp::socket s_{io_};
-        asio::posix::stream_descriptor input_{io_, ::dup(STDIN_FILENO)};
         std::mutex mutex_{};
         char symbol_[1]{};
         std::vector<char> buffer_;
-        std::list<Observer*> observers_{};
+
+        std::list<Observer *> observers_{};
     };
 
 } // joaquind

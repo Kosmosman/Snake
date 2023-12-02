@@ -20,19 +20,18 @@ namespace joaquind {
     class Interpreter {
     public:
         static std::vector<FieldCell> TransformToCoordType(Container &s) {
-            std::vector<FieldCell> field(s.size());
-            size_t x{}, y{};
+            std::vector<FieldCell> field(s.size() * 2);
+            size_t x{1}, y{1};
             size_t counter{};
             for (auto &i: s) {
                 if (i == '\n') {
-                    x = 0;
                     ++y;
+                    x = 1;
                 } else {
-                    field[counter++] = {x, y, ChooseType(i)};
-                    ++x;
+                    field[counter++] = {x++, y, ChooseType(i)};
                 }
             }
-            field.resize(counter - 1);
+            field.resize(counter);
             return field;
         }
 

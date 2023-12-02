@@ -10,6 +10,7 @@ int main() {
     w.Init();
     joaquind::Client client;
     client.AddObserver(&w);
+    w.AddObserver(&client);
     std::thread t{[&]() { client.Connect(); }};
     t.detach();
     w.Start();
