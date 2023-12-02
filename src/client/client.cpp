@@ -14,13 +14,6 @@ namespace joaquind {
         io_.run();
     }
 
-    void Client::TurnOffBufferingInput() {
-        struct termios settings{};
-        tcgetattr(STDIN_FILENO, &settings);
-        settings.c_lflag &= ~(ICANON | ECHO);
-        tcsetattr(STDIN_FILENO, TCSANOW, &settings);
-    }
-
     void Client::Session() {
         ReadFromSocket();
     }
@@ -40,12 +33,6 @@ namespace joaquind {
                                    ReadFromSocket();
                                }
                            });
-    }
-
-    void Client::PrintField() {
-        for (int i{}; buffer_[i]; ++i)
-            std::cout << buffer_[i];
-        ReadFromSocket();
     }
 
     void Client::AddObserver(Observer *obs) {
