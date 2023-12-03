@@ -21,7 +21,7 @@ namespace joaquind {
 
     class MainWindow : public AbstractWindow, public Observer {
     public:
-        MainWindow() : height_{640}, width_{640} {
+        MainWindow() : height_{680}, width_{410} {
             instance_ = this;
             type_ = WindowType::kMainWindow;
         }
@@ -47,6 +47,8 @@ namespace joaquind {
                 ImGui_ImplOpenGL3_NewFrame();
                 ImGui_ImplGlfw_NewFrame();
                 ImGui::NewFrame();
+                ImGui::SetNextWindowSize({410, 410});
+                ImGui::SetNextWindowPos({0, 0});
 
                 RenderPrimitives();
                 SetColors();
@@ -75,15 +77,12 @@ namespace joaquind {
                                            static_cast<float>((static_cast<float>(i.y) - 0.5) * 10)};
                     const ImVec2 pos_end{static_cast<float>((static_cast<float>(i.x) + 0.5) * 10),
                                          static_cast<float>((static_cast<float>(i.y) + 0.5) * 10)};
-//                    ImU32 color = IM_COL32(255, 0, 0, 255);
                     draw_list->AddRectFilled(pos_start, pos_end, ImGui::ColorConvertFloat4ToU32(fs_.border_color));
                 } else if (i.type == CellType::kSnake) {
                     const ImVec2 pos{static_cast<float>(i.x) * 10, static_cast<float>(i.y) * 10};
-//                    ImU32 color = IM_COL32(0, 0, 255, 255);
                     draw_list->AddCircleFilled(pos, 5, ImGui::ColorConvertFloat4ToU32(fs_.snake_color), 30);
                 } else if (i.type == CellType::kMeal) {
                     const ImVec2 pos{static_cast<float>(i.x) * 10, static_cast<float>(i.y) * 10};
-//                    ImU32 color = IM_COL32(0, 255, 0, 255);
                     draw_list->AddCircleFilled(pos, 5, ImGui::ColorConvertFloat4ToU32(fs_.meal_color), 30);
                 }
             }
@@ -167,39 +166,49 @@ namespace joaquind {
             static bool show_snake_color_picker = false;
             static bool show_meal_color_picker = false;
 
-                ImGui::Begin("Color settings", nullptr, ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoFocusOnAppearing);
+            ImGui::SetNextWindowSize({450, 280});
+            ImGui::SetNextWindowPos({0, 410});
 
-                if (ImGui::Button("Field")) {
-                    show_border_color_picker = true;
-                }
+            ImGui::Begin("Color settings", nullptr,
+                         ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoFocusOnAppearing);
 
-                if (show_border_color_picker) {
-                    ImGui::Begin("Field", &show_border_color_picker);
-                    ImGui::ColorPicker3("Field's color", (float *) &fs_.border_color);
-                    ImGui::End();
-                }
+            if (ImGui::Button("Snake")) {
+                show_snake_color_picker = true;
+            }
 
-                if (ImGui::Button("Snake")) {
-                    show_snake_color_picker = true;
-                }
-
-                if (show_snake_color_picker) {
-                    ImGui::Begin("Snake", &show_snake_color_picker);
-                    ImGui::ColorPicker3("Snake's color", (float *) &fs_.snake_color);
-                    ImGui::End();
-                }
-
-                if (ImGui::Button("Meal")) {
-                    show_meal_color_picker = true;
-                }
-
-                if (show_meal_color_picker) {
-                    ImGui::Begin("Meal", &show_meal_color_picker);
-                    ImGui::ColorPicker3("Meal's color", (float *) &fs_.meal_color);
-                    ImGui::End();
-                }
-
+            if (show_snake_color_picker) {
+                ImGui::SetNextWindowSize({300, 280});
+                ImGui::SetNextWindowPos({150, 410});
+                ImGui::Begin("Snake's color", &show_snake_color_picker);
+                ImGui::ColorPicker3("Color", (float *) &fs_.snake_color);
                 ImGui::End();
+            }
+
+            if (ImGui::Button("Field")) {
+                show_border_color_picker = true;
+            }
+
+            if (show_border_color_picker) {
+                ImGui::SetNextWindowSize({300, 280});
+                ImGui::SetNextWindowPos({150, 410});
+                ImGui::Begin("Field's color", &show_border_color_picker);
+                ImGui::ColorPicker3("Color", (float *) &fs_.border_color);
+                ImGui::End();
+            }
+
+            if (ImGui::Button("Meal")) {
+                show_meal_color_picker = true;
+            }
+
+            if (show_meal_color_picker) {
+                ImGui::SetNextWindowSize({300, 280});
+                ImGui::SetNextWindowPos({150, 410});
+                ImGui::Begin("Meal's color", &show_meal_color_picker);
+                ImGui::ColorPicker3("Color", (float *) &fs_.meal_color);
+                ImGui::End();
+            }
+
+            ImGui::End();
         }
 
         static void KeyCallback(GLFWwindow *window, int key, int scancode, int action, int mods) {
