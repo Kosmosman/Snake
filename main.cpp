@@ -6,7 +6,7 @@
 #include "game.h"
 
 int main() {
-    int n{30}, m{30};
+    int n{40}, m{40};
     joaquind::ObjectManager om;
     joaquind::Game g(&om, {n, m});
     joaquind::Server s(&g);
