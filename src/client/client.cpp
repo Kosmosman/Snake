@@ -9,7 +9,6 @@
 
 namespace joaquind {
     void Client::Connect() {
-        TurnOffBufferingInput();
         s_.async_connect(ep_, [this](const asio::error_code &e) { if (!e) Session(); });
         io_.run();
     }
@@ -27,11 +26,9 @@ namespace joaquind {
                            [this](const asio::error_code &e, std::size_t bytes) {
                                if (!e && bytes) {
                                    buffer_.resize(bytes);
-                                   PrintField();
                                    NotifyObservers();
-                               } else {
-                                   ReadFromSocket();
                                }
+                               ReadFromSocket();
                            });
     }
 
@@ -51,7 +48,6 @@ namespace joaquind {
     }
 
     void Client::OnKeyPressed(char ch) {
-        std::cout << "Was pressed " << ch << '\n';
         symbol_[0] = ch;
         WriteToSocket();
     }

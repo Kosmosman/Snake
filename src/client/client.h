@@ -24,7 +24,7 @@ namespace joaquind {
     class Client : public KeyObserver{
     public:
 
-        Client() : buffer_(1024) {}
+        Client() : buffer_(4086) {}
 
         void Connect();
 
@@ -35,15 +35,12 @@ namespace joaquind {
         void NotifyObservers();
 
     private:
-        void TurnOffBufferingInput();
 
         void Session();
 
         void WriteToSocket();
 
         void ReadFromSocket();
-
-        void PrintField();
 
         void OnKeyPressed(char ch) override;
 

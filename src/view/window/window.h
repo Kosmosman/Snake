@@ -40,9 +40,6 @@ namespace joaquind {
 
         void Start() {
             ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
-
-//            while (cells_.empty());
-
             // Main Loop
             while (!glfwWindowShouldClose(window_)) {
                 glfwPollEvents();
@@ -50,14 +47,9 @@ namespace joaquind {
                 ImGui_ImplOpenGL3_NewFrame();
                 ImGui_ImplGlfw_NewFrame();
                 ImGui::NewFrame();
-                ImGui::SetNextWindowPos(ImVec2(0, 0));
-                ImGui::SetNextWindowSize(ImVec2(640, 640));
 
-
-                ImGui::Begin("Snake", nullptr, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove);
                 RenderPrimitives();
-                ImGui::End();
-
+                SetColors();
 
                 ImGui::Render();
                 int display_w, display_h;
@@ -75,6 +67,7 @@ namespace joaquind {
         };
 
         void RenderPrimitives() {
+            ImGui::Begin("Snake", nullptr, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove);
             ImDrawList *draw_list = ImGui::GetWindowDrawList();
             for (auto &i: cells_) {
                 if (i.type == CellType::kBorder) {
@@ -82,18 +75,19 @@ namespace joaquind {
                                            static_cast<float>((static_cast<float>(i.y) - 0.5) * 10)};
                     const ImVec2 pos_end{static_cast<float>((static_cast<float>(i.x) + 0.5) * 10),
                                          static_cast<float>((static_cast<float>(i.y) + 0.5) * 10)};
-                    ImU32 color = IM_COL32(255, 0, 0, 255);
-                    draw_list->AddRectFilled(pos_start, pos_end, color);
+//                    ImU32 color = IM_COL32(255, 0, 0, 255);
+                    draw_list->AddRectFilled(pos_start, pos_end, ImGui::ColorConvertFloat4ToU32(fs_.border_color));
                 } else if (i.type == CellType::kSnake) {
                     const ImVec2 pos{static_cast<float>(i.x) * 10, static_cast<float>(i.y) * 10};
-                    ImU32 color = IM_COL32(0, 0, 255, 255);
-                    draw_list->AddCircleFilled(pos, 5, color, 30);
+//                    ImU32 color = IM_COL32(0, 0, 255, 255);
+                    draw_list->AddCircleFilled(pos, 5, ImGui::ColorConvertFloat4ToU32(fs_.snake_color), 30);
                 } else if (i.type == CellType::kMeal) {
                     const ImVec2 pos{static_cast<float>(i.x) * 10, static_cast<float>(i.y) * 10};
-                    ImU32 color = IM_COL32(0, 255, 0, 255);
-                    draw_list->AddCircleFilled(pos, 5, color, 30);
+//                    ImU32 color = IM_COL32(0, 255, 0, 255);
+                    draw_list->AddCircleFilled(pos, 5, ImGui::ColorConvertFloat4ToU32(fs_.meal_color), 30);
                 }
             }
+            ImGui::End();
         }
 
         void OnUpdate(const std::vector<FieldCell> &cell) override {
@@ -167,7 +161,48 @@ namespace joaquind {
             io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
         }
 
-        static void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods) {
+        void SetColors() {
+
+            static bool show_border_color_picker = false;
+            static bool show_snake_color_picker = false;
+            static bool show_meal_color_picker = false;
+
+                ImGui::Begin("Color settings", nullptr, ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoFocusOnAppearing);
+
+                if (ImGui::Button("Field")) {
+                    show_border_color_picker = true;
+                }
+
+                if (show_border_color_picker) {
+                    ImGui::Begin("Field", &show_border_color_picker);
+                    ImGui::ColorPicker3("Field's color", (float *) &fs_.border_color);
+                    ImGui::End();
+                }
+
+                if (ImGui::Button("Snake")) {
+                    show_snake_color_picker = true;
+                }
+
+                if (show_snake_color_picker) {
+                    ImGui::Begin("Snake", &show_snake_color_picker);
+                    ImGui::ColorPicker3("Snake's color", (float *) &fs_.snake_color);
+                    ImGui::End();
+                }
+
+                if (ImGui::Button("Meal")) {
+                    show_meal_color_picker = true;
+                }
+
+                if (show_meal_color_picker) {
+                    ImGui::Begin("Meal", &show_meal_color_picker);
+                    ImGui::ColorPicker3("Meal's color", (float *) &fs_.meal_color);
+                    ImGui::End();
+                }
+
+                ImGui::End();
+        }
+
+        static void KeyCallback(GLFWwindow *window, int key, int scancode, int action, int mods) {
             if (action == GLFW_PRESS) {
                 switch (key) {
                     case GLFW_KEY_W:
@@ -182,6 +217,8 @@ namespace joaquind {
                     case GLFW_KEY_S:
                         instance_->NotifyObservers('s');
                         break;
+                    case GLFW_KEY_ESCAPE:
+                        instance_->DestroyWindows();
                     default:
                         break;
                 }
@@ -189,13 +226,23 @@ namespace joaquind {
         }
 
         GLFWwindow *window_{};
+        struct FieldSettings {
+            ImVec4 field_color{0, 0, 0, 255};
+            ImVec4 snake_color{0, 0, 255, 255};
+            ImVec4 meal_color{0, 255, 0, 255};
+            ImVec4 border_color{255, 0, 0, 255};
+        };
+
         int height_{};
         int width_{};
         char *title_{};
-        static MainWindow* instance_;
 
-        std::list<KeyObserver*> observers_{};
+        static MainWindow *instance_;
+        std::list<KeyObserver *> observers_{};
+
         std::vector<FieldCell> cells_{};
+        FieldSettings fs_{};
+
     };
 
     MainWindow *MainWindow::instance_ = nullptr;
